@@ -834,14 +834,75 @@ function getIndexableSource(url) {
 }
 
 function rebuildIndexableUrls() {
+    const crawledMap = new Map();
+    (crawlState.urls || []).forEach(urlData => {
+        if (urlData && urlData.url) {
+            crawledMap.set(urlData.url, urlData);
+        }
+    });
+
     const seen = new Set();
     const indexableUrls = [];
 
-    (crawlState.urls || []).forEach(urlData => {
-        if (!isIndexableUrl(urlData)) return;
-        if (seen.has(urlData.url)) return;
-        seen.add(urlData.url);
+    // Prefer sitemap URLs so the tab still shows useful results even if
+    // the crawler cannot fully access the page because of JS or 403 blocks.
+    (crawlState.sitemapUrls || []).forEach(url => {
+        if (!url || seen.has(url)) return;
+        seen.add(url);
 
+        const crawled = crawledMap.get(url);
+        if (crawled && !isIndexableUrl(crawled)) {
+            return;
+        }
+
+        indexableUrls.push(crawled ? {
+            ...crawled,
+            source: 'sitemap'
+        } : {
+            url,
+            status_code: 'sitemap',
+            content_type: 'text/html',
+            size: 0,
+            is_internal: isInternalURL(url),
+            depth: 0,
+            title: '',
+            meta_description: '',
+            h1: '',
+            h2: [],
+            h3: [],
+            word_count: 0,
+            meta_tags: {},
+            og_tags: {},
+            twitter_tags: {},
+            canonical_url: '',
+            lang: '',
+            charset: '',
+            viewport: '',
+            robots: '',
+            author: '',
+            keywords: '',
+            generator: '',
+            theme_color: '',
+            json_ld: [],
+            analytics: {},
+            images: [],
+            external_links: 0,
+            internal_links: 0,
+            response_time: 0,
+            redirects: [],
+            hreflang: [],
+            schema_org: [],
+            linked_from: [],
+            source: 'sitemap',
+            discovered_only: true
+        });
+    });
+
+    // Include any crawled URLs that are indexable even if they are not in the sitemap
+    (crawlState.urls || []).forEach(urlData => {
+        if (!urlData || !urlData.url || seen.has(urlData.url)) return;
+        if (!isIndexableUrl(urlData)) return;
+        seen.add(urlData.url);
         indexableUrls.push({
             ...urlData,
             source: getIndexableSource(urlData.url)
@@ -856,7 +917,7 @@ function rebuildIndexableUrls() {
 }
 
 function addIndexableUrlToTable(urlData) {
-    if (!isIndexableUrl(urlData)) {
+    if (!isIndexableUrl(urlData) && !crawlState.sitemapUrls.includes(urlData.url)) {
         return;
     }
 
@@ -2385,10 +2446,11 @@ function renderExternalLinkRow(row, link, index) {
 function renderIndexableRow(row, urlData, index) {
     const source = urlData.source || getIndexableSource(urlData.url);
     const robots = (urlData.robots || '').trim();
+    const statusValue = urlData.discovered_only ? 'sitemap' : (urlData.status_code || 0);
 
     row.innerHTML = `
         <td style="word-break: break-all;" title="${urlData.url}">${urlData.url}</td>
-        <td>${urlData.status_code || 0}</td>
+        <td>${statusValue}</td>
         <td>${source}</td>
         <td style="word-break: break-all;" title="${urlData.canonical_url || ''}">${urlData.canonical_url || ''}</td>
         <td style="word-break: break-word;" title="${robots}">${robots}</td>
