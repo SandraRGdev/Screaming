@@ -554,10 +554,15 @@ function updateProgressText(data) {
 }
 
 function updateStatsDisplay() {
-    document.getElementById('discoveredCount').textContent = crawlState.stats.discovered;
-    document.getElementById('crawledCount').textContent = crawlState.stats.crawled;
-    document.getElementById('crawlDepth').textContent = crawlState.stats.depth;
-    document.getElementById('crawlSpeed').textContent = crawlState.stats.speed + ' URLs/seg';
+    const discoveredEl = document.getElementById('discoveredCount');
+    const crawledEl = document.getElementById('crawledCount');
+    const depthEl = document.getElementById('crawlDepth');
+    const speedEl = document.getElementById('crawlSpeed');
+
+    if (discoveredEl) discoveredEl.textContent = crawlState.stats.discovered;
+    if (crawledEl) crawledEl.textContent = crawlState.stats.crawled;
+    if (depthEl) depthEl.textContent = crawlState.stats.depth;
+    if (speedEl) speedEl.textContent = crawlState.stats.speed + ' URLs/seg';
 }
 
 function updateMemoryDisplay(memoryData, memoryDataSizes) {
@@ -565,22 +570,26 @@ function updateMemoryDisplay(memoryData, memoryDataSizes) {
 
     // Actual data size (deep measurement)
     const dataMB = memoryDataSizes.total_deep_mb || 0;
-    document.getElementById('memCurrent').textContent = dataMB.toFixed(1) + ' MB';
+    const memCurrent = document.getElementById('memCurrent');
+    if (memCurrent) memCurrent.textContent = dataMB.toFixed(1) + ' MB';
 
     // KB per URL (actual data)
     const kbPerUrl = memoryDataSizes.avg_per_url_kb || 0;
-    document.getElementById('memPeak').textContent = kbPerUrl.toFixed(1) + ' KB/URL';
+    const memPeak = document.getElementById('memPeak');
+    if (memPeak) memPeak.textContent = kbPerUrl.toFixed(1) + ' KB/URL';
 
     // Estimate for 1M URLs (data only)
     const estimate1M = (kbPerUrl * 1000000) / 1024; // Convert to MB
     const estimate1MDisplay = estimate1M > 1024
         ? (estimate1M / 1024).toFixed(1) + ' GB'
         : estimate1M.toFixed(0) + ' MB';
-    document.getElementById('memEstimate1M').textContent = estimate1MDisplay;
+    const memEstimate1M = document.getElementById('memEstimate1M');
+    if (memEstimate1M) memEstimate1M.textContent = estimate1MDisplay;
 
     // System available
     const availableMB = memoryData.system?.available_mb || 0;
-    document.getElementById('memAvailable').textContent = availableMB.toFixed(0) + ' MB';
+    const memAvailable = document.getElementById('memAvailable');
+    if (memAvailable) memAvailable.textContent = availableMB.toFixed(0) + ' MB';
 }
 
 function updateCrawlButtons() {
