@@ -119,15 +119,15 @@ async function initializeApp() {
                 if (isIssuesTabActive()) {
                     updateIssuesTable(data.issues);
                 } else {
-                    // Update badge count even if tab not active
-                    const issuesTabButton = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.textContent.includes('Issues'));
+                    // Update badge count even if the tab is not active
+                    const issuesTabButton = document.getElementById('issuesTabBtn');
                     if (issuesTabButton && data.issues.length > 0) {
                         const errorCount = data.issues.filter(i => i.type === 'error').length;
                         const warningCount = data.issues.filter(i => i.type === 'warning').length;
                         let badgeColor = '#3b82f6';
                         if (errorCount > 0) badgeColor = '#ef4444';
                         else if (warningCount > 0) badgeColor = '#f59e0b';
-                        issuesTabButton.innerHTML = `Issues <span style="background: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 12px; font-size: 12px;">${data.issues.length}</span>`;
+                        issuesTabButton.innerHTML = `Incidencias <span style="background: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 12px; font-size: 12px;">${data.issues.length}</span>`;
                     }
                 }
             }
@@ -152,11 +152,11 @@ async function initializeApp() {
                 updateCrawlButtons();
 
                 // Start polling for updates
-                updateStatus('Crawl resumed - updating...');
+                updateStatus('Rastreo reanudado - actualizando...');
                 pollCrawlProgress();
             } else {
                 // Crawl is not running, just loaded data
-                updateStatus(`Loaded crawl: ${data.stats.crawled} URLs, ${data.links?.length || 0} links, ${data.issues?.length || 0} issues`);
+                updateStatus(`Rastreo cargado: ${data.stats.crawled} URLs, ${data.links?.length || 0} enlaces, ${data.issues?.length || 0} incidencias`);
             }
 
             console.log('Loaded crawl from database:', {
@@ -169,7 +169,7 @@ async function initializeApp() {
             });
         } catch (error) {
             console.error('Error loading crawl data:', error);
-            updateStatus('Error loading crawl data');
+            updateStatus('Error al cargar los datos del rastreo');
         }
     }
 
@@ -208,7 +208,7 @@ function startCrawl() {
     let url = urlInput.value.trim();
 
     if (!url) {
-        alert('Please enter a URL to crawl');
+        alert('Introduce una URL para rastrear');
         urlInput.focus();
         return;
     }
@@ -217,7 +217,7 @@ function startCrawl() {
     url = normalizeUrl(url);
 
     if (!isValidUrl(url)) {
-        alert('Please enter a valid URL or domain');
+        alert('Introduce una URL o dominio válido');
         urlInput.focus();
         return;
     }
@@ -239,7 +239,7 @@ function startCrawl() {
     // Update UI
     updateCrawlButtons();
     showProgress();
-    updateStatus('Starting crawl...');
+    updateStatus('Iniciando rastreo...');
 
     // Clear previous data
     clearAllTables();
@@ -252,7 +252,7 @@ function startCrawl() {
 function pauseCrawl() {
     crawlState.isPaused = true;
     updateCrawlButtons();
-    updateStatus('Crawl paused');
+    updateStatus('Rastreo en pausa');
 
     // Pause Python crawler
     fetch('/api/pause_crawl', {
@@ -265,7 +265,7 @@ function pauseCrawl() {
 function resumeCrawl() {
     crawlState.isPaused = false;
     updateCrawlButtons();
-    updateStatus('Resuming crawl...');
+    updateStatus('Reanudando rastreo...');
 
     // Resume Python crawler
     fetch('/api/resume_crawl', {
@@ -282,7 +282,7 @@ function stopCrawl() {
     // Update UI
     updateCrawlButtons();
     hideProgress();
-    updateStatus('Crawl stopped');
+    updateStatus('Rastreo detenido');
 
     // Stop Python crawler
     stopPythonCrawl();
@@ -290,7 +290,7 @@ function stopCrawl() {
 
 function clearCrawlData() {
     if (crawlState.isRunning) {
-        if (!confirm('A crawl is currently running. Stop the crawl and clear all data?')) {
+        if (!confirm('Hay un rastreo en curso. ¿Quieres detenerlo y borrar todos los datos?')) {
             return;
         }
         stopCrawl();
@@ -342,7 +342,7 @@ function clearCrawlData() {
     document.querySelector('[data-filter="all"]')?.classList.add('active');
 
     // Update UI
-    updateStatus('Data cleared');
+    updateStatus('Datos borrados');
     hideProgress();
     updateCrawlButtons(); // Update save/load button states
 
@@ -363,7 +363,7 @@ function startPythonCrawl(url) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            updateStatus('Crawling in progress...');
+            updateStatus('Rastreo en curso...');
             // Refresh user info to update crawl count
             loadUserInfo();
             // Start polling for updates
@@ -375,7 +375,7 @@ function startPythonCrawl(url) {
     })
     .catch(error => {
         console.error('Error starting crawl:', error);
-        updateStatus('Error starting crawl');
+        updateStatus('Error al iniciar el rastreo');
         stopCrawl();
     });
 }
@@ -407,9 +407,9 @@ function pollCrawlProgress() {
 
             // Update bottom status bar based on current state
             if (data.is_running_pagespeed) {
-                updateStatus('Running PageSpeed analysis...');
+                updateStatus('Ejecutando análisis de rendimiento...');
             } else if (data.status === 'running') {
-                updateStatus('Crawling in progress...');
+                updateStatus('Rastreo en curso...');
             }
 
             // Update visualization if visualization tab is active
@@ -420,7 +420,7 @@ function pollCrawlProgress() {
 
             if (data.status === 'demo_stopped' || data.demo_stopped) {
                 stopCrawl();
-                updateStatus('Demo limit reached — crawl data saved');
+                updateStatus('Límite de demo alcanzado - los datos del rastreo se han guardado');
                 showDemoLimitNotification();
                 if (typeof loadVisualizationData === 'function') {
                     loadVisualizationData();
@@ -429,7 +429,7 @@ function pollCrawlProgress() {
                 setTimeout(pollCrawlProgress, 1000); // Poll every second
             } else if (data.status === 'completed') {
                 stopCrawl();
-                updateStatus('Crawl completed');
+                updateStatus('Rastreo completado');
                 // Update visualization one final time when crawl completes
                 if (typeof loadVisualizationData === 'function') {
                     loadVisualizationData();
@@ -536,20 +536,20 @@ function updateProgressText(data) {
     if (!progressText) return;
 
     if (data.is_running_pagespeed) {
-        progressText.textContent = 'Running PageSpeed analysis...';
+        progressText.textContent = 'Ejecutando análisis de rendimiento...';
     } else if (data.status === 'completed') {
-        progressText.textContent = 'Crawl completed';
+        progressText.textContent = 'Rastreo completado';
     } else if (data.status === 'running') {
         const stats = data.stats || crawlState.stats;
         if (stats.crawled === 0) {
-            progressText.textContent = 'Starting crawl...';
+            progressText.textContent = 'Iniciando rastreo...';
         } else if (stats.discovered > stats.crawled) {
-            progressText.textContent = `Crawling... (${stats.crawled}/${stats.discovered} URLs)`;
+            progressText.textContent = `Rastreando... (${stats.crawled}/${stats.discovered} URLs)`;
         } else {
-            progressText.textContent = `Finishing up... (${stats.crawled} URLs crawled)`;
+            progressText.textContent = `Finalizando... (${stats.crawled} URLs rastreadas)`;
         }
     } else {
-        progressText.textContent = 'Initializing...';
+        progressText.textContent = 'Inicializando...';
     }
 }
 
@@ -557,7 +557,7 @@ function updateStatsDisplay() {
     document.getElementById('discoveredCount').textContent = crawlState.stats.discovered;
     document.getElementById('crawledCount').textContent = crawlState.stats.crawled;
     document.getElementById('crawlDepth').textContent = crawlState.stats.depth;
-    document.getElementById('crawlSpeed').textContent = crawlState.stats.speed + ' URLs/sec';
+    document.getElementById('crawlSpeed').textContent = crawlState.stats.speed + ' URLs/seg';
 }
 
 function updateMemoryDisplay(memoryData, memoryDataSizes) {
@@ -596,7 +596,7 @@ function updateCrawlButtons() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8 5v14l11-7z"/>
                 </svg>
-                Resume
+                Reanudar
             `;
         } else {
             startBtn.innerHTML = `
@@ -604,7 +604,7 @@ function updateCrawlButtons() {
                     <rect x="6" y="4" width="4" height="16"/>
                     <rect x="14" y="4" width="4" height="16"/>
                 </svg>
-                Pause
+                Pausar
             `;
         }
         startBtn.disabled = false;
@@ -617,7 +617,7 @@ function updateCrawlButtons() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z"/>
             </svg>
-            Start
+            Iniciar
         `;
         startBtn.disabled = false;
         stopBtn.disabled = true;
@@ -669,11 +669,11 @@ function showDemoLimitNotification() {
     `;
     box.innerHTML = `
         <div style="font-size: 28px; margin-bottom: 12px;">&#9888;</div>
-        <h2 style="color: #f59e0b; margin: 0 0 12px; font-size: 18px;">Demo Memory Limit Reached</h2>
+        <h2 style="color: #f59e0b; margin: 0 0 12px; font-size: 18px;">Límite de memoria de la demo alcanzado</h2>
         <p style="margin: 0 0 16px; line-height: 1.5; font-size: 14px;">
-            This user has reached the 1.5 GB per-user memory limit.<br>
-            Your crawl data has been saved automatically.<br><br>
-            <strong>This is a free demo and is not intended for production use.</strong>
+            Este usuario ha alcanzado el límite de memoria de 1.5 GB por usuario.<br>
+            Los datos del rastreo se han guardado automáticamente.<br><br>
+            <strong>Es una demo gratuita y no está pensada para uso en producción.</strong>
         </p>
         <button id="demoLimitDismiss" style="
             background: #f59e0b; color: #000; border: none; padding: 10px 28px;
@@ -723,7 +723,7 @@ function initializeVirtualScrollers() {
                 buffer: 25,
                 renderRow: renderOverviewRow
             });
-            console.log('Overview virtual scroller initialized');
+            console.log('Visor virtual de resumen inicializado');
         }
 
         // Internal URLs table
@@ -734,7 +734,7 @@ function initializeVirtualScrollers() {
                 buffer: 25,
                 renderRow: renderInternalRow
             });
-            console.log('Internal virtual scroller initialized');
+            console.log('Visor virtual de internas inicializado');
         }
 
         // External URLs table
@@ -745,7 +745,7 @@ function initializeVirtualScrollers() {
                 buffer: 25,
                 renderRow: renderExternalRow
             });
-            console.log('External virtual scroller initialized');
+            console.log('Visor virtual de externas inicializado');
         }
 
         // Internal Links table
@@ -756,7 +756,7 @@ function initializeVirtualScrollers() {
                 buffer: 25,
                 renderRow: renderInternalLinkRow
             });
-            console.log('Internal links virtual scroller initialized');
+            console.log('Visor virtual de enlaces internos inicializado');
         }
 
         // External Links table
@@ -767,7 +767,7 @@ function initializeVirtualScrollers() {
                 buffer: 25,
                 renderRow: renderExternalLinkRow
             });
-            console.log('External links virtual scroller initialized');
+            console.log('Visor virtual de enlaces externos inicializado');
         }
 
         // Indexable URLs table
@@ -778,7 +778,7 @@ function initializeVirtualScrollers() {
                 buffer: 25,
                 renderRow: renderIndexableRow
             });
-            console.log('Indexables virtual scroller initialized');
+            console.log('Visor virtual de indexables inicializado');
         }
 
         // Issues table
@@ -789,7 +789,7 @@ function initializeVirtualScrollers() {
                 buffer: 25,
                 renderRow: renderIssueRow
             });
-            console.log('Issues virtual scroller initialized');
+            console.log('Visor virtual de incidencias inicializado');
         }
     } catch (error) {
         console.error('Error initializing virtual scrollers:', error);
@@ -1144,7 +1144,7 @@ function updateIssuesTable(issues) {
     }
 
     // Update issue count in tab button (find the button, not the tab content)
-    const issuesTabButton = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.textContent.includes('Issues'));
+    const issuesTabButton = document.getElementById('issuesTabBtn');
     if (issuesTabButton) {
         const totalIssues = issues.length;
         if (totalIssues > 0) {
@@ -1152,9 +1152,9 @@ function updateIssuesTable(issues) {
             if (errorCount > 0) badgeColor = '#ef4444';
             else if (warningCount > 0) badgeColor = '#f59e0b';
 
-            issuesTabButton.innerHTML = `Issues <span style="background: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 12px; font-size: 12px;">${totalIssues}</span>`;
+            issuesTabButton.innerHTML = `Incidencias <span style="background: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 12px; font-size: 12px;">${totalIssues}</span>`;
         } else {
-            issuesTabButton.innerHTML = 'Issues';
+            issuesTabButton.innerHTML = 'Incidencias';
         }
     }
 }
@@ -1615,17 +1615,17 @@ function updateStatusCodesTable(filterType = null) {
 
 function getStatusCodeText(statusCode) {
     if (statusCode >= 200 && statusCode < 300) {
-        return 'Success';
+        return 'Correcto';
     } else if (statusCode >= 300 && statusCode < 400) {
-        return 'Redirect';
+        return 'Redirección';
     } else if (statusCode >= 400 && statusCode < 500) {
-        return 'Client Error';
+        return 'Error del cliente';
     } else if (statusCode >= 500) {
-        return 'Server Error';
+        return 'Error del servidor';
     } else if (statusCode === 0) {
-        return 'Failed/Timeout';
+        return 'Fallo/tiempo agotado';
     } else {
-        return 'Unknown';
+        return 'Desconocido';
     }
 }
 
@@ -1711,7 +1711,7 @@ async function loadUserInfo() {
             if (user.tier === 'guest') {
                 // Show crawls remaining for guests
                 const remaining = user.crawls_remaining;
-                userInfoElement.textContent = `Guest (${remaining}/3 crawls remaining)`;
+                userInfoElement.textContent = `Invitado (${remaining}/3 rastreos restantes)`;
                 userInfoElement.style.color = remaining === 0 ? '#dc2626' : '#6b7280';
             } else {
                 // Show username and tier for registered users
@@ -1731,7 +1731,7 @@ async function exportData() {
         const settingsData = await settingsResponse.json();
 
         if (!settingsData.success) {
-            showNotification('Failed to get export settings', 'error');
+            showNotification('No se han podido obtener los ajustes de exportación', 'error');
             return;
         }
 
@@ -1764,11 +1764,11 @@ async function exportData() {
         }
 
         if (!hasData) {
-            showNotification('No crawl data to export', 'error');
+            showNotification('No hay datos de rastreo para exportar', 'error');
             return;
         }
 
-        showNotification('Preparing export...', 'info');
+        showNotification('Preparando exportación...', 'info');
 
         // Request export from backend, including local data if available
         const exportResponse = await fetch('/api/export_data', {
@@ -1791,7 +1791,7 @@ async function exportData() {
         const exportData = await exportResponse.json();
 
         if (!exportData.success) {
-            showNotification(exportData.error || 'Export failed', 'error');
+            showNotification(exportData.error || 'La exportación ha fallado', 'error');
             return;
         }
 
@@ -1813,7 +1813,7 @@ async function exportData() {
                 }, index * 500); // Delay between downloads to avoid browser blocking
             });
 
-            showNotification(`Exporting ${exportData.files.length} files...`, 'success');
+            showNotification(`Exportando ${exportData.files.length} archivos...`, 'success');
         } else {
             // Single file download (original logic)
             const blob = new Blob([exportData.content], { type: exportData.mimetype });
@@ -1827,12 +1827,12 @@ async function exportData() {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
 
-            showNotification(`Export complete: ${exportData.filename}`, 'success');
+            showNotification(`Exportación completada: ${exportData.filename}`, 'success');
         }
 
     } catch (error) {
         console.error('Export error:', error);
-        showNotification('Export failed', 'error');
+        showNotification('La exportación ha fallado', 'error');
     }
 }
 
@@ -1848,7 +1848,7 @@ function showUrlDetails(url) {
     // Find the URL data
     const urlData = crawlState.urls.find(u => u.url === url);
     if (!urlData) {
-        showNotification('URL data not found', 'error');
+        showNotification('No se han encontrado datos de la URL', 'error');
         return;
     }
 
@@ -1870,7 +1870,7 @@ function showUrlDetails(url) {
         <div class="details-modal-overlay" onclick="closeUrlDetails()">
             <div class="details-modal" onclick="event.stopPropagation()">
                 <div class="details-header">
-                    <h3>Comprehensive URL Analysis</h3>
+                    <h3>Análisis completo de la URL</h3>
                     <button class="close-btn" onclick="closeUrlDetails()">×</button>
                 </div>
                 <div class="details-content">
@@ -1878,41 +1878,41 @@ function showUrlDetails(url) {
 
                     <div class="details-sections">
                         <div class="details-section">
-                            <h4>🔍 Basic SEO</h4>
+                            <h4>🔍 SEO básico</h4>
                             <div class="details-grid">
-                                <div><strong>Title:</strong> ${safeTitle}</div>
+                                <div><strong>Título:</strong> ${safeTitle}</div>
                                 <div><strong>H1:</strong> ${safeH1}</div>
-                                <div><strong>Meta Description:</strong> ${safeMetaDesc}</div>
-                                <div><strong>Word Count:</strong> ${urlData.word_count || 0}</div>
-                                <div><strong>Language:</strong> ${safeLang}</div>
-                                <div><strong>Charset:</strong> ${safeCharset}</div>
-                                <div><strong>Canonical URL:</strong> ${safeCanonical}</div>
-                                <div><strong>Robots Meta:</strong> ${safeRobots}</div>
+                                <div><strong>Meta descripción:</strong> ${safeMetaDesc}</div>
+                                <div><strong>Número de palabras:</strong> ${urlData.word_count || 0}</div>
+                                <div><strong>Idioma:</strong> ${safeLang}</div>
+                                <div><strong>Conjunto de caracteres:</strong> ${safeCharset}</div>
+                                <div><strong>URL canónica:</strong> ${safeCanonical}</div>
+                                <div><strong>Meta robots:</strong> ${safeRobots}</div>
                             </div>
                         </div>
 
                         <div class="details-section">
-                            <h4>📊 Analytics & Tracking</h4>
+                            <h4>📊 Analítica y seguimiento</h4>
                             <div class="details-grid">
-                                <div><strong>Google Analytics:</strong> ${urlData.analytics?.google_analytics ? '✅ Yes' : '❌ No'}</div>
-                                <div><strong>GA4/Gtag:</strong> ${urlData.analytics?.gtag ? '✅ Yes' : '❌ No'}</div>
+                                <div><strong>Google Analytics:</strong> ${urlData.analytics?.google_analytics ? '✅ Sí' : '❌ No'}</div>
+                                <div><strong>GA4/Gtag:</strong> ${urlData.analytics?.gtag ? '✅ Sí' : '❌ No'}</div>
                                 <div><strong>GA4 ID:</strong> ${safeGa4Id}</div>
                                 <div><strong>GTM ID:</strong> ${safeGtmId}</div>
-                                <div><strong>Facebook Pixel:</strong> ${urlData.analytics?.facebook_pixel ? '✅ Yes' : '❌ No'}</div>
-                                <div><strong>Hotjar:</strong> ${urlData.analytics?.hotjar ? '✅ Yes' : '❌ No'}</div>
-                                <div><strong>Mixpanel:</strong> ${urlData.analytics?.mixpanel ? '✅ Yes' : '❌ No'}</div>
+                                <div><strong>Facebook Pixel:</strong> ${urlData.analytics?.facebook_pixel ? '✅ Sí' : '❌ No'}</div>
+                                <div><strong>Hotjar:</strong> ${urlData.analytics?.hotjar ? '✅ Sí' : '❌ No'}</div>
+                                <div><strong>Mixpanel:</strong> ${urlData.analytics?.mixpanel ? '✅ Sí' : '❌ No'}</div>
                             </div>
                         </div>
 
                         <div class="details-section">
-                            <h4>📱 Social Media</h4>
+                            <h4>📱 Redes sociales</h4>
                             <div class="details-grid">
-                                <div><strong>OpenGraph Tags:</strong> ${Object.keys(urlData.og_tags || {}).length} found</div>
-                                <div><strong>Twitter Cards:</strong> ${Object.keys(urlData.twitter_tags || {}).length} found</div>
+                                <div><strong>Etiquetas OpenGraph:</strong> ${Object.keys(urlData.og_tags || {}).length} encontradas</div>
+                                <div><strong>Tarjetas de Twitter:</strong> ${Object.keys(urlData.twitter_tags || {}).length} encontradas</div>
                             </div>
                             ${Object.keys(urlData.og_tags || {}).length > 0 ? `
                                 <div class="details-subsection">
-                                    <h5>OpenGraph Tags:</h5>
+                                    <h5>Etiquetas OpenGraph:</h5>
                                     ${Object.entries(urlData.og_tags || {}).map(([key, value]) =>
                                         `<div><strong>og:${escapeHtml(key)}:</strong> ${escapeHtml(value)}</div>`
                                     ).join('')}
@@ -1920,7 +1920,7 @@ function showUrlDetails(url) {
                             ` : ''}
                             ${Object.keys(urlData.twitter_tags || {}).length > 0 ? `
                                 <div class="details-subsection">
-                                    <h5>Twitter Cards:</h5>
+                                    <h5>Tarjetas de Twitter:</h5>
                                     ${Object.entries(urlData.twitter_tags || {}).map(([key, value]) =>
                                         `<div><strong>twitter:${escapeHtml(key)}:</strong> ${escapeHtml(value)}</div>`
                                     ).join('')}
@@ -1929,31 +1929,31 @@ function showUrlDetails(url) {
                         </div>
 
                         <div class="details-section">
-                            <h4>🔗 Links & Structure</h4>
+                            <h4>🔗 Enlaces y estructura</h4>
                             <div class="details-grid">
-                                <div><strong>Internal Links:</strong> ${urlData.internal_links || 0}</div>
-                                <div><strong>External Links:</strong> ${urlData.external_links || 0}</div>
-                                <div><strong>Images:</strong> ${(urlData.images || []).length}</div>
-                                <div><strong>H2 Tags:</strong> ${(urlData.h2 || []).length}</div>
-                                <div><strong>H3 Tags:</strong> ${(urlData.h3 || []).length}</div>
+                                <div><strong>Enlaces internos:</strong> ${urlData.internal_links || 0}</div>
+                                <div><strong>Enlaces externos:</strong> ${urlData.external_links || 0}</div>
+                                <div><strong>Imágenes:</strong> ${(urlData.images || []).length}</div>
+                                <div><strong>Etiquetas H2:</strong> ${(urlData.h2 || []).length}</div>
+                                <div><strong>Etiquetas H3:</strong> ${(urlData.h3 || []).length}</div>
                             </div>
                         </div>
 
                         <div class="details-section">
-                            <h4>⚡ Performance</h4>
+                            <h4>⚡ Rendimiento</h4>
                             <div class="details-grid">
-                                <div><strong>Status Code:</strong> ${urlData.status_code}</div>
-                                <div><strong>Response Time:</strong> ${urlData.response_time || 0}ms</div>
-                                <div><strong>Content Type:</strong> ${safeContentType}</div>
-                                <div><strong>Size:</strong> ${urlData.size || 0} bytes</div>
+                                <div><strong>Código de estado:</strong> ${urlData.status_code}</div>
+                                <div><strong>Tiempo de respuesta:</strong> ${urlData.response_time || 0}ms</div>
+                                <div><strong>Tipo de contenido:</strong> ${safeContentType}</div>
+                                <div><strong>Tamaño:</strong> ${urlData.size || 0} bytes</div>
                             </div>
                         </div>
 
                         ${(urlData.linked_from && urlData.linked_from.length > 0) ? `
                         <div class="details-section">
-                            <h4>🔗 Linked From</h4>
+                            <h4>🔗 Enlazada desde</h4>
                             <div class="details-grid">
-                                <div><strong>Found on ${urlData.linked_from.length} page${urlData.linked_from.length !== 1 ? 's' : ''}:</strong></div>
+                                <div><strong>Encontrada en ${urlData.linked_from.length} página${urlData.linked_from.length !== 1 ? 's' : ''}:</strong></div>
                             </div>
                             <div class="details-subsection">
                                 <ul style="list-style: none; padding: 0; margin: 10px 0;">
@@ -1961,21 +1961,21 @@ function showUrlDetails(url) {
                                         const escapedUrl = escapeHtml(sourceUrl);
                                         return `<li style="padding: 5px 0; word-break: break-all;"><a href="${escapedUrl}" target="_blank" style="color: #8b5cf6; text-decoration: none;">${escapedUrl}</a></li>`;
                                     }).join('')}
-                                    ${urlData.linked_from.length > 20 ? `<li style="padding: 5px 0; font-style: italic; color: #9ca3af;">... and ${urlData.linked_from.length - 20} more</li>` : ''}
+                                    ${urlData.linked_from.length > 20 ? `<li style="padding: 5px 0; font-style: italic; color: #9ca3af;">... y ${urlData.linked_from.length - 20} más</li>` : ''}
                                 </ul>
                             </div>
                         </div>
                         ` : ''}
 
                         <div class="details-section">
-                            <h4>🏗️ Structured Data</h4>
+                            <h4>🏗️ Datos estructurados</h4>
                             <div class="details-grid">
-                                <div><strong>JSON-LD Scripts:</strong> ${(urlData.json_ld || []).length}</div>
-                                <div><strong>Schema.org Items:</strong> ${(urlData.schema_org || []).length}</div>
+                                <div><strong>Scripts JSON-LD:</strong> ${(urlData.json_ld || []).length}</div>
+                                <div><strong>Elementos Schema.org:</strong> ${(urlData.schema_org || []).length}</div>
                             </div>
                             ${(urlData.json_ld || []).length > 0 ? `
                                 <div class="details-subsection">
-                                    <h5>JSON-LD Data:</h5>
+                                    <h5>Datos JSON-LD:</h5>
                                     <pre class="json-preview">${escapeHtml(JSON.stringify(urlData.json_ld, null, 2))}</pre>
                                 </div>
                             ` : ''}
@@ -2015,12 +2015,12 @@ function displayPageSpeedResults(results) {
         pageCard.innerHTML = `
             <div class="pagespeed-page-header">
                 <h4 class="pagespeed-page-url">${pageResult.url}</h4>
-                <span class="pagespeed-analysis-date">Analyzed: ${pageResult.analysis_date}</span>
+                <span class="pagespeed-analysis-date">Analizado: ${pageResult.analysis_date}</span>
             </div>
 
             <div class="pagespeed-results-grid">
                 <div class="pagespeed-device-result">
-                    <h5>📱 Mobile</h5>
+                    <h5>📱 Móvil</h5>
                     ${mobile.success ? `
                         <div class="pagespeed-score ${getScoreClass(mobile.performance_score)}">
                             ${mobile.performance_score || 'N/A'}
@@ -2049,13 +2049,13 @@ function displayPageSpeedResults(results) {
                         </div>
                     ` : `
                         <div class="pagespeed-error">
-                            Error: ${mobile.error || 'Analysis failed'}
+                            Error: ${mobile.error || 'El análisis ha fallado'}
                         </div>
                     `}
                 </div>
 
                 <div class="pagespeed-device-result">
-                    <h5>🖥️ Desktop</h5>
+                    <h5>🖥️ Escritorio</h5>
                     ${desktop.success ? `
                         <div class="pagespeed-score ${getScoreClass(desktop.performance_score)}">
                             ${desktop.performance_score || 'N/A'}
@@ -2084,7 +2084,7 @@ function displayPageSpeedResults(results) {
                         </div>
                     ` : `
                         <div class="pagespeed-error">
-                            Error: ${desktop.error || 'Analysis failed'}
+                            Error: ${desktop.error || 'El análisis ha fallado'}
                         </div>
                     `}
                 </div>
@@ -2106,7 +2106,7 @@ function getScoreClass(score) {
 async function saveCrawl() {
     try {
         if (crawlState.stats.crawled === 0) {
-            showNotification('No crawl data to save', 'error');
+            showNotification('No hay datos de rastreo para guardar', 'error');
             return;
         }
 
@@ -2124,7 +2124,7 @@ async function saveCrawl() {
                 urls = crawlData.urls;
                 links = crawlData.links || links;
                 issues = crawlData.issues || issues;
-                // Update stats to include latest PageSpeed results if available
+                // Update stats with the latest crawl data if available
                 if (crawlData.stats) {
                     stats = crawlData.stats;
                 }
@@ -2163,11 +2163,11 @@ async function saveCrawl() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        showNotification('Crawl saved successfully', 'success');
+        showNotification('Rastreo guardado correctamente', 'success');
 
     } catch (error) {
         console.error('Save error:', error);
-        showNotification('Failed to save crawl', 'error');
+        showNotification('No se ha podido guardar el rastreo', 'error');
     }
 }
 
@@ -2274,14 +2274,14 @@ function loadCrawl() {
                         updateIssuesTable(filteredIssues);
                     } else {
                         // Update the badge count even if tab is not active
-                        const issuesTabButton = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.textContent.includes('Issues'));
+                        const issuesTabButton = document.getElementById('issuesTabBtn');
                         if (issuesTabButton) {
                             const errorCount = filteredIssues.filter(i => i.type === 'error').length;
                             const warningCount = filteredIssues.filter(i => i.type === 'warning').length;
                             let badgeColor = '#3b82f6';
                             if (errorCount > 0) badgeColor = '#ef4444';
                             else if (warningCount > 0) badgeColor = '#f59e0b';
-                            issuesTabButton.innerHTML = `Issues <span style="background: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 12px; font-size: 12px;">${filteredIssues.length}</span>`;
+                            issuesTabButton.innerHTML = `Incidencias <span style="background: ${badgeColor}; color: white; padding: 2px 6px; border-radius: 12px; font-size: 12px;">${filteredIssues.length}</span>`;
                         }
                     }
                 } catch (error) {
@@ -2302,7 +2302,7 @@ function loadCrawl() {
 
             // Display PageSpeed results if available
             if (saveData.stats && saveData.stats.pagespeed_results) {
-                console.log(`Loading ${saveData.stats.pagespeed_results.length} PageSpeed results...`);
+                console.log(`Cargando ${saveData.stats.pagespeed_results.length} resultados de PageSpeed...`);
                 displayPageSpeedResults(saveData.stats.pagespeed_results);
             }
 
@@ -2331,11 +2331,11 @@ function loadCrawl() {
                 });
             }
 
-            showNotification(`Crawl loaded: ${saveData.stats.crawled} URLs from ${new Date(saveData.timestamp).toLocaleDateString()}`, 'success');
+            showNotification(`Rastreo cargado: ${saveData.stats.crawled} URLs del ${new Date(saveData.timestamp).toLocaleDateString()}`, 'success');
 
         } catch (error) {
             console.error('Load error:', error);
-            showNotification('Failed to load crawl file', 'error');
+            showNotification('No se ha podido cargar el archivo de rastreo', 'error');
         }
     });
 
@@ -2419,7 +2419,7 @@ function renderExternalRow(row, urlData, index) {
 
 function renderInternalLinkRow(row, link, index) {
     const statusBadge = link.target_status ? `<span class="status-badge status-${Math.floor(link.target_status / 100)}xx">${link.target_status}</span>` : '';
-    const placement = link.placement ? link.placement.charAt(0).toUpperCase() + link.placement.slice(1) : 'Unknown';
+    const placement = link.placement ? link.placement.charAt(0).toUpperCase() + link.placement.slice(1) : 'Desconocido';
 
     row.innerHTML = `
         <td style="word-break: break-all;">${link.source_url}</td>
@@ -2432,7 +2432,7 @@ function renderInternalLinkRow(row, link, index) {
 
 function renderExternalLinkRow(row, link, index) {
     const statusBadge = link.target_status ? `<span class="status-badge status-${Math.floor(link.target_status / 100)}xx">${link.target_status}</span>` : '';
-    const placement = link.placement ? link.placement.charAt(0).toUpperCase() + link.placement.slice(1) : 'Unknown';
+    const placement = link.placement ? link.placement.charAt(0).toUpperCase() + link.placement.slice(1) : 'Desconocido';
 
     row.innerHTML = `
         <td style="word-break: break-all;">${link.source_url}</td>

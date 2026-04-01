@@ -16,8 +16,6 @@ let defaultSettings = {
     respectRobotsTxt: true,
     allowCookies: true,
     discoverSitemaps: true,
-    enablePageSpeed: false,
-    googleApiKey: '',
 
     // Filter settings
     includeExtensions: 'html,htm,php,asp,aspx,jsp',
@@ -324,7 +322,7 @@ async function openSettings() {
 
     // Block guests from accessing settings
     if (userTier === 'guest') {
-        alert('Settings are not available for guest users in this session.\n\nRefresh the page or sign in through the app entry point to continue.');
+        alert('Los ajustes no están disponibles para usuarios invitados en esta sesión.\n\nRecarga la página o inicia sesión desde la entrada de la aplicación para continuar.');
         return;
     }
 
@@ -383,9 +381,9 @@ function applyTierRestrictions(tier) {
             const message = document.createElement('div');
             message.style.cssText = 'padding: 40px; text-align: center; color: #9ca3af; font-size: 16px;';
             message.innerHTML = `
-                <h3 style="color: #f3f4f6; margin-bottom: 16px;">Settings Access Restricted</h3>
-                <p>Guest accounts cannot modify settings.</p>
-                <p style="margin-top: 8px; font-size: 14px;">Please upgrade your account to access settings.</p>
+                <h3 style="color: #f3f4f6; margin-bottom: 16px;">Acceso a ajustes restringido</h3>
+                <p>Las cuentas invitadas no pueden modificar los ajustes.</p>
+                <p style="margin-top: 8px; font-size: 14px;">Actualiza tu cuenta para acceder a los ajustes.</p>
             `;
             settingsContent.innerHTML = '';
             settingsContent.appendChild(message);
@@ -458,7 +456,7 @@ function collectSettingsFromForm() {
     // Collect regular form fields
     const formFields = [
         'maxDepth', 'maxUrls', 'crawlDelay', 'followRedirects', 'crawlExternalLinks',
-        'userAgent', 'timeout', 'retries', 'acceptLanguage', 'respectRobotsTxt', 'allowCookies', 'discoverSitemaps', 'enablePageSpeed', 'googleApiKey',
+        'userAgent', 'timeout', 'retries', 'acceptLanguage', 'respectRobotsTxt', 'allowCookies', 'discoverSitemaps',
         'includeExtensions', 'excludeExtensions', 'includePatterns', 'excludePatterns', 'maxFileSize',
         'enableDuplicationCheck', 'duplicationThreshold',
         'exportFormat', 'concurrency', 'memoryLimit', 'logLevel', 'saveSession',
@@ -494,7 +492,7 @@ function saveSettings() {
     // Validate settings
     const validation = validateSettings(newSettings);
     if (!validation.valid) {
-        alert('Settings validation failed: ' + validation.errors.join(', '));
+        alert('La validación de ajustes ha fallado: ' + validation.errors.join(', '));
         return;
     }
 
@@ -504,7 +502,7 @@ function saveSettings() {
         console.log('Settings saved to localStorage');
     } catch (error) {
         console.error('Failed to save to localStorage:', error);
-        showNotification('Warning: Settings may not persist', 'warning');
+        showNotification('Aviso: los ajustes pueden no permanecer guardados', 'warning');
     }
 
     // Update current settings
@@ -515,7 +513,7 @@ function saveSettings() {
 
     // Close settings modal
     closeSettings();
-    showNotification('Settings saved successfully', 'success');
+    showNotification('Ajustes guardados correctamente', 'success');
 
     // Sync to backend for crawler configuration
     fetch('/api/save_settings', {
@@ -542,7 +540,7 @@ function saveSettings() {
 }
 
 function resetSettings() {
-    if (confirm('Are you sure you want to reset all settings to their default values?')) {
+    if (confirm('¿Seguro que quieres restablecer todos los ajustes a sus valores predeterminados?')) {
         currentSettings = { ...defaultSettings };
 
         // Clear localStorage
@@ -555,7 +553,7 @@ function resetSettings() {
 
         populateSettingsForm();
         applyCustomCSS(); // Remove any custom CSS
-        showNotification('Settings reset to defaults', 'info');
+        showNotification('Ajustes restablecidos a los valores predeterminados', 'info');
 
         // Sync reset to backend
         syncSettingsToBackend();
@@ -567,66 +565,66 @@ function validateSettings(settings) {
 
     // Validate numeric ranges
     if (settings.maxDepth < 1 || settings.maxDepth > 10) {
-        errors.push('Max depth must be between 1 and 10');
+        errors.push('La profundidad máxima debe estar entre 1 y 10');
     }
 
     if (settings.maxUrls < 1 || settings.maxUrls > 5000000) {
-        errors.push('Max URLs must be between 1 and 5,000,000');
+        errors.push('El máximo de URLs debe estar entre 1 y 5.000.000');
     }
 
     if (settings.crawlDelay < 0 || settings.crawlDelay > 60) {
-        errors.push('Crawl delay must be between 0 and 60 seconds');
+        errors.push('La pausa entre peticiones debe estar entre 0 y 60 segundos');
     }
 
     if (settings.timeout < 1 || settings.timeout > 120) {
-        errors.push('Timeout must be between 1 and 120 seconds');
+        errors.push('El tiempo máximo de espera debe estar entre 1 y 120 segundos');
     }
 
     if (settings.retries < 0 || settings.retries > 10) {
-        errors.push('Retries must be between 0 and 10');
+        errors.push('Los reintentos deben estar entre 0 y 10');
     }
 
     if (settings.maxFileSize < 1 || settings.maxFileSize > 1000) {
-        errors.push('Max file size must be between 1 and 1000 MB');
+        errors.push('El tamaño máximo de archivo debe estar entre 1 y 1000 MB');
     }
 
     if (settings.concurrency < 1 || settings.concurrency > 50) {
-        errors.push('Concurrency must be between 1 and 50');
+        errors.push('La concurrencia debe estar entre 1 y 50');
     }
 
     if (settings.memoryLimit < 64 || settings.memoryLimit > 4096) {
-        errors.push('Memory limit must be between 64 and 4096 MB');
+        errors.push('El límite de memoria debe estar entre 64 y 4096 MB');
     }
 
     // Validate duplication detection settings
     if (settings.duplicationThreshold < 0 || settings.duplicationThreshold > 1) {
-        errors.push('Duplication threshold must be between 0.0 and 1.0');
+        errors.push('El umbral de duplicados debe estar entre 0.0 y 1.0');
     }
 
     // Validate JavaScript settings if enabled
     if (settings.enableJavaScript) {
         if (settings.jsWaitTime < 0 || settings.jsWaitTime > 30) {
-            errors.push('JavaScript wait time must be between 0 and 30 seconds');
+            errors.push('El tiempo de espera de JavaScript debe estar entre 0 y 30 segundos');
         }
 
         if (settings.jsTimeout < 5 || settings.jsTimeout > 120) {
-            errors.push('JavaScript timeout must be between 5 and 120 seconds');
+            errors.push('El tiempo máximo de JavaScript debe estar entre 5 y 120 segundos');
         }
 
         if (settings.jsViewportWidth < 800 || settings.jsViewportWidth > 4000) {
-            errors.push('JavaScript viewport width must be between 800 and 4000 pixels');
+            errors.push('El ancho del viewport de JavaScript debe estar entre 800 y 4000 píxeles');
         }
 
         if (settings.jsViewportHeight < 600 || settings.jsViewportHeight > 3000) {
-            errors.push('JavaScript viewport height must be between 600 and 3000 pixels');
+            errors.push('La altura del viewport de JavaScript debe estar entre 600 y 3000 píxeles');
         }
 
         if (settings.jsMaxConcurrentPages < 1 || settings.jsMaxConcurrentPages > 10) {
-            errors.push('JavaScript concurrent pages must be between 1 and 10');
+            errors.push('Las páginas simultáneas de JavaScript deben estar entre 1 y 10');
         }
 
         if (!settings.jsUserAgent.trim()) {
-            errors.push('JavaScript user agent cannot be empty');
+            errors.push('El User-Agent de JavaScript no puede estar vacío');
         }
     }
 
@@ -635,18 +633,18 @@ function validateSettings(settings) {
         try {
             new URL(settings.proxyUrl);
         } catch (e) {
-            errors.push('Invalid proxy URL format');
+            errors.push('El formato de la URL del proxy no es válido');
         }
     }
 
     // Validate user agent
     if (!settings.userAgent.trim()) {
-        errors.push('User agent cannot be empty');
+        errors.push('El User-Agent no puede estar vacío');
     }
 
     // Validate export fields
     if (settings.exportFields.length === 0) {
-        errors.push('At least one export field must be selected');
+        errors.push('Debe seleccionarse al menos un campo de exportación');
     }
 
     return {
@@ -760,17 +758,17 @@ function importSettings(event) {
             // Validate imported settings
             const validation = validateSettings(importedSettings);
             if (!validation.valid) {
-                alert('Invalid settings file: ' + validation.errors.join(', '));
+                alert('El archivo de ajustes no es válido: ' + validation.errors.join(', '));
                 return;
             }
 
             // Merge with defaults to ensure all fields are present
             currentSettings = { ...defaultSettings, ...importedSettings };
             populateSettingsForm();
-            showNotification('Settings imported successfully', 'success');
+            showNotification('Ajustes importados correctamente', 'success');
 
         } catch (error) {
-            alert('Invalid settings file format');
+            alert('El formato del archivo de ajustes no es válido');
         }
     };
     reader.readAsText(file);
