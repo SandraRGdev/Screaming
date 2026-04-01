@@ -103,7 +103,7 @@ class WebCrawler:
             'delay': 1.0,
             'follow_redirects': True,
             'crawl_external': False,
-            'user_agent': 'LibreCrawl/1.0 (Web Crawler)',
+            'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
             'timeout': 10,
             'retries': 3,
             'accept_language': 'en-US,en;q=0.9',
@@ -123,11 +123,12 @@ class WebCrawler:
             'discover_sitemaps': True,
             'enable_pagespeed': False,
             'enable_javascript': False,
+            'fallback_to_javascript_on_block': True,
             'js_wait_time': 3,
             'js_timeout': 30,
             'js_browser': 'chromium',
             'js_headless': True,
-            'js_user_agent': 'LibreCrawl/1.0 (Web Crawler with JavaScript)',
+            'js_user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
             'js_viewport_width': 1920,
             'js_viewport_height': 1080,
             'js_max_concurrent_pages': 3,
@@ -658,7 +659,13 @@ class WebCrawler:
         # Update session headers
         self.session.headers.update({
             'User-Agent': self.config['user_agent'],
-            'Accept-Language': self.config['accept_language']
+            'Accept-Language': self.config['accept_language'],
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
         })
 
         # Add custom headers
@@ -680,6 +687,29 @@ class WebCrawler:
                 self.rate_limiter.update_rate(1.0 / self.config['delay'])
             else:
                 self.rate_limiter.update_rate(100.0)
+
+    def _should_fallback_to_browser(self, status_code):
+        """Decide whether to retry a blocked request with the browser renderer."""
+        return (
+            self.config.get('fallback_to_javascript_on_block', True)
+            and status_code in (401, 403, 429)
+        )
+
+    def _render_with_browser_fallback(self, url, depth):
+        """Render a URL with Playwright even if JavaScript crawling is disabled."""
+        try:
+            if not self.js_renderer:
+                self.js_renderer = JavaScriptRenderer(self.config)
+
+            if not self.js_renderer.browser:
+                print(f"Initializing browser fallback for blocked URL: {url}")
+                asyncio.run(self.js_renderer.initialize())
+
+            print(f"Retrying blocked URL with browser rendering: {url}")
+            return asyncio.run(self._crawl_url_with_javascript(url, depth))
+        except Exception as e:
+            print(f"Browser fallback failed for {url}: {e}")
+            return None
 
     def _crawl_worker(self):
         """Main crawling worker with smooth rate limiting"""
@@ -864,6 +894,12 @@ class WebCrawler:
 
             # Determine if URL is internal
             is_internal = self.link_manager.is_internal(url)
+
+            # If the site blocks direct HTTP requests, try browser rendering
+            if self._should_fallback_to_browser(response.status_code):
+                fallback_result = self._render_with_browser_fallback(url, depth)
+                if fallback_result:
+                    return fallback_result
 
             # Create result structure
             result = {

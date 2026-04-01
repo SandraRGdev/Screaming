@@ -80,7 +80,7 @@ class SettingsManager:
             'crawlExternalLinks': False,
 
             # Request settings
-            'userAgent': 'LibreCrawl/1.0 (Web Crawler)',
+            'userAgent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
             'timeout': 10,
             'retries': 3,
             'acceptLanguage': 'en-US,en;q=0.9',
@@ -120,7 +120,7 @@ class SettingsManager:
             'jsTimeout': 30,
             'jsBrowser': 'chromium',
             'jsHeadless': True,
-            'jsUserAgent': 'LibreCrawl/1.0 (Web Crawler with JavaScript)',
+            'jsUserAgent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
             'jsViewportWidth': 1920,
             'jsViewportHeight': 1080,
             'jsMaxConcurrentPages': 3,
