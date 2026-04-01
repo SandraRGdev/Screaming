@@ -390,6 +390,22 @@ body {
     background: rgba(139, 92, 246, 0.1);
 }
 
+.tab-btn.tab-btn-indexables {
+    color: #facc15;
+}
+
+.tab-btn.tab-btn-indexables:hover {
+    color: #fde68a;
+    background: rgba(250, 204, 21, 0.08);
+}
+
+.tab-btn.tab-btn-indexables.active {
+    color: #1f2937;
+    border-bottom-color: #facc15;
+    background: linear-gradient(135deg, rgba(250, 204, 21, 0.95), rgba(251, 191, 36, 0.9));
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.18);
+}
+
 .tab-content {
     flex: 1;
     overflow: hidden;
