@@ -5,6 +5,8 @@ let crawlState = {
     startTime: null,
     baseUrl: null,
     urls: [],
+    sitemapUrls: [],
+    indexableUrls: [],
     links: [],
     issues: [],
     stats: {
@@ -35,6 +37,7 @@ let virtualScrollers = {
     external: null,
     internalLinks: null,
     externalLinks: null,
+    indexables: null,
     issues: null
 };
 
@@ -81,6 +84,8 @@ async function initializeApp() {
 
             // Force populate all data
             crawlState.urls = [];
+            crawlState.sitemapUrls = data.sitemap_urls || [];
+            crawlState.indexableUrls = [];
             crawlState.links = data.links || [];
             crawlState.issues = data.issues || [];
             crawlState.stats = data.stats || {};
@@ -104,6 +109,8 @@ async function initializeApp() {
                     updateLinksTable(data.links);
                 }
             }
+
+            rebuildIndexableUrls();
 
             // Load issues if present
             if (data.issues && data.issues.length > 0) {
@@ -433,7 +440,8 @@ function pollCrawlProgress() {
                         urls: crawlState.urls,
                         links: crawlState.links,
                         issues: crawlState.issues,
-                        stats: crawlState.stats
+                        stats: crawlState.stats,
+                        indexables: crawlState.indexableUrls
                     });
                 }
             }
@@ -452,6 +460,10 @@ function updateCrawlData(data) {
     crawlState.stats = data.stats || crawlState.stats;
     updateStatsDisplay();
 
+    if (data.sitemap_urls) {
+        crawlState.sitemapUrls = data.sitemap_urls;
+    }
+
     // Update memory statistics
     if (data.memory && data.memory_data) {
         updateMemoryDisplay(data.memory, data.memory_data);
@@ -462,6 +474,10 @@ function updateCrawlData(data) {
         data.urls.forEach(url => {
             addUrlToTable(url);
         });
+    }
+
+    if (data.urls || data.sitemap_urls) {
+        rebuildIndexableUrls();
     }
 
     // Update links tables only if Links tab is active to improve performance
@@ -509,7 +525,8 @@ function updateCrawlData(data) {
             urls: crawlState.urls,
             links: crawlState.links,
             issues: crawlState.issues,
-            stats: crawlState.stats
+            stats: crawlState.stats,
+            indexables: crawlState.indexableUrls
         });
     }
 }
@@ -753,6 +770,17 @@ function initializeVirtualScrollers() {
             console.log('External links virtual scroller initialized');
         }
 
+        // Indexable URLs table
+        const indexablesContainer = document.querySelector('#indexables-tab .table-container');
+        if (indexablesContainer && indexablesContainer.querySelector('tbody')) {
+            virtualScrollers.indexables = new VirtualScroller(indexablesContainer, {
+                rowHeight: 80,
+                buffer: 25,
+                renderRow: renderIndexableRow
+            });
+            console.log('Indexables virtual scroller initialized');
+        }
+
         // Issues table
         const issuesContainer = document.querySelector('#issues-tab .table-container');
         if (issuesContainer && issuesContainer.querySelector('tbody')) {
@@ -776,6 +804,77 @@ function isLinksTabActive() {
 function isIssuesTabActive() {
     const issuesTab = document.getElementById('issues-tab');
     return issuesTab && issuesTab.classList.contains('active');
+}
+
+function isIndexablesTabActive() {
+    const indexablesTab = document.getElementById('indexables-tab');
+    return indexablesTab && indexablesTab.classList.contains('active');
+}
+
+function isIndexableUrl(urlData) {
+    if (!urlData) return false;
+
+    const statusCode = parseInt(urlData.status_code);
+    const contentType = (urlData.content_type || '').toLowerCase();
+    const robots = (urlData.robots || '').toLowerCase();
+
+    if (statusCode !== 200) return false;
+    if (robots.includes('noindex')) return false;
+    if (contentType && !contentType.includes('html')) return false;
+
+    return true;
+}
+
+function getIndexableSource(url) {
+    if (!url) return 'crawl';
+    if (Array.isArray(crawlState.sitemapUrls) && crawlState.sitemapUrls.includes(url)) {
+        return 'sitemap';
+    }
+    return 'crawl';
+}
+
+function rebuildIndexableUrls() {
+    const seen = new Set();
+    const indexableUrls = [];
+
+    (crawlState.urls || []).forEach(urlData => {
+        if (!isIndexableUrl(urlData)) return;
+        if (seen.has(urlData.url)) return;
+        seen.add(urlData.url);
+
+        indexableUrls.push({
+            ...urlData,
+            source: getIndexableSource(urlData.url)
+        });
+    });
+
+    crawlState.indexableUrls = indexableUrls;
+
+    if (virtualScrollers.indexables) {
+        applyIndexablesFilter();
+    }
+}
+
+function addIndexableUrlToTable(urlData) {
+    if (!isIndexableUrl(urlData)) {
+        return;
+    }
+
+    const existingUrl = crawlState.indexableUrls.find(u => u.url === urlData.url);
+    if (existingUrl) {
+        return;
+    }
+
+    const indexedData = {
+        ...urlData,
+        source: getIndexableSource(urlData.url)
+    };
+
+    crawlState.indexableUrls.push(indexedData);
+
+    if (virtualScrollers.indexables) {
+        virtualScrollers.indexables.appendData([indexedData]);
+    }
 }
 
 function updateLinksTable(links) {
@@ -883,6 +982,44 @@ function applyLinksFilter() {
     }
 }
 
+function applyIndexablesFilter() {
+    if (!virtualScrollers.indexables) return;
+
+    let filteredIndexables = crawlState.indexableUrls || [];
+    const filterType = crawlState.filters.active;
+
+    if (filterType) {
+        filteredIndexables = filteredIndexables.filter(url => {
+            switch (filterType) {
+                case 'internal':
+                    return isInternalURL(url.url);
+                case 'external':
+                    return !isInternalURL(url.url);
+                case '2xx':
+                    return parseInt(url.status_code) >= 200 && parseInt(url.status_code) < 300;
+                case '3xx':
+                    return parseInt(url.status_code) >= 300 && parseInt(url.status_code) < 400;
+                case '4xx':
+                    return parseInt(url.status_code) >= 400 && parseInt(url.status_code) < 500;
+                case '5xx':
+                    return parseInt(url.status_code) >= 500;
+                case 'html':
+                    return (url.content_type || '').toLowerCase().includes('html');
+                case 'css':
+                    return (url.content_type || '').toLowerCase().includes('css');
+                case 'js':
+                    return (url.content_type || '').toLowerCase().includes('javascript');
+                case 'images':
+                    return (url.content_type || '').toLowerCase().includes('image');
+                default:
+                    return true;
+            }
+        });
+    }
+
+    virtualScrollers.indexables.setData(filteredIndexables);
+}
+
 function filterInternalLinks(filterType) {
     crawlState.filters.linksFilter.internalStatusCode = filterType;
     applyLinksFilter();
@@ -978,6 +1115,9 @@ function clearAllTables() {
     if (virtualScrollers.externalLinks) {
         virtualScrollers.externalLinks.clear();
     }
+    if (virtualScrollers.indexables) {
+        virtualScrollers.indexables.clear();
+    }
     if (virtualScrollers.issues) {
         virtualScrollers.issues.clear();
     }
@@ -987,6 +1127,8 @@ function clearAllTables() {
     if (statusCodesBody) statusCodesBody.innerHTML = '';
 
     crawlState.urls = [];
+    crawlState.sitemapUrls = [];
+    crawlState.indexableUrls = [];
 
     console.log('All tables cleared');
 }
@@ -1022,6 +1164,8 @@ function addUrlToTable(urlData) {
     } else if (!urlData.is_internal && virtualScrollers.external) {
         virtualScrollers.external.appendData([urlData]);
     }
+
+    addIndexableUrlToTable(urlData);
 
     // Reapply current filter if one is active
     if (crawlState.filters.active) {
@@ -1181,6 +1325,7 @@ function applyFilter(filterType) {
     filterVirtualScrollerData('overview', filterType);
     filterVirtualScrollerData('internal', filterType);
     filterVirtualScrollerData('external', filterType);
+    filterVirtualScrollerData('indexables', filterType);
 
     // Update Status Codes table with filtered data
     updateStatusCodesTable(filterType);
@@ -1203,6 +1348,9 @@ function clearActiveFilters() {
         const externalUrls = crawlState.urls.filter(url => !url.is_internal);
         virtualScrollers.external.setData(externalUrls);
     }
+    if (virtualScrollers.indexables) {
+        virtualScrollers.indexables.setData(crawlState.indexableUrls);
+    }
 
     // Reset Status Codes table to show all data
     updateStatusCodesTable();
@@ -1219,6 +1367,8 @@ function filterVirtualScrollerData(scrollerName, filterType) {
         filteredData = filteredData.filter(url => url.is_internal);
     } else if (scrollerName === 'external') {
         filteredData = filteredData.filter(url => !url.is_internal);
+    } else if (scrollerName === 'indexables') {
+        filteredData = crawlState.indexableUrls || [];
     }
 
     // Apply user-selected filter
@@ -1930,7 +2080,9 @@ async function saveCrawl() {
             urls: urls,
             links: links,
             issues: issues,
-            version: '1.1'
+            sitemapUrls: crawlState.sitemapUrls || [],
+            indexableUrls: crawlState.indexableUrls || [],
+            version: '1.2'
         };
 
         // Create and download the file
@@ -1987,6 +2139,8 @@ function loadCrawl() {
             crawlState.baseUrl = saveData.baseUrl;
             crawlState.stats = saveData.stats;
             crawlState.urls = [];
+            crawlState.sitemapUrls = saveData.sitemapUrls || [];
+            crawlState.indexableUrls = [];
             crawlState.links = saveData.links || [];
             crawlState.issues = saveData.issues || [];
 
@@ -2022,6 +2176,7 @@ function loadCrawl() {
 
                 console.log(`Added ${crawlState.urls.length} URLs to state`);
                 console.log('Sample URL data:', crawlState.urls[0]);
+                rebuildIndexableUrls();
             }
 
             // Load links data
@@ -2110,7 +2265,8 @@ function loadCrawl() {
                     urls: crawlState.urls,
                     links: crawlState.links,
                     issues: crawlState.issues,
-                    stats: crawlState.stats
+                    stats: crawlState.stats,
+                    indexables: crawlState.indexableUrls
                 });
             }
 
@@ -2223,6 +2379,19 @@ function renderExternalLinkRow(row, link, index) {
         <td>${statusBadge}</td>
         <td>${link.target_domain || ''}</td>
         <td>${placement}</td>
+    `;
+}
+
+function renderIndexableRow(row, urlData, index) {
+    const source = urlData.source || getIndexableSource(urlData.url);
+    const robots = (urlData.robots || '').trim();
+
+    row.innerHTML = `
+        <td style="word-break: break-all;" title="${urlData.url}">${urlData.url}</td>
+        <td>${urlData.status_code || 0}</td>
+        <td>${source}</td>
+        <td style="word-break: break-all;" title="${urlData.canonical_url || ''}">${urlData.canonical_url || ''}</td>
+        <td style="word-break: break-word;" title="${robots}">${robots}</td>
     `;
 }
 

@@ -185,6 +185,7 @@
                         <button class="tab-btn" onclick="switchTab('external')">External</button>
                         <button class="tab-btn" onclick="switchTab('status-codes')">Status Codes</button>
                         <button class="tab-btn" onclick="switchTab('links')">Links</button>
+                        <button class="tab-btn" onclick="switchTab('indexables')">Indexables</button>
                         <button class="tab-btn" onclick="switchTab('issues')">Issues</button>
                         <button class="tab-btn" onclick="switchTab('pagespeed')">PageSpeed</button>
                         <button class="tab-btn" onclick="switchTab('visualization')">Visualization</button>
@@ -340,6 +341,38 @@
                                                 </tbody>
                                             </table>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="indexables-tab" class="tab-pane">
+                            <div style="margin-bottom: 16px; color: #9ca3af; font-size: 14px; line-height: 1.5;">
+                                URLs with `200 OK` and no `noindex` signal. This is a practical indexability view, not Google Search Console indexing data.
+                            </div>
+                            <div class="table-container">
+                                <table class="data-table" id="indexablesTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 42%;">URL</th>
+                                            <th style="width: 10%;">Status</th>
+                                            <th style="width: 12%;">Source</th>
+                                            <th style="width: 18%;">Canonical</th>
+                                            <th style="width: 18%;">Robots</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="indexablesTableBody">
+                                        <!-- Indexable URLs will be populated here -->
+                                    </tbody>
+                                </table>
+                                <div class="empty-state" id="indexablesEmptyState" style="display: none;">
+                                    <div class="empty-state-content">
+                                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <path d="M12 8v4M12 16h0"/>
+                                        </svg>
+                                        <h3>No Indexable URLs Found</h3>
+                                        <p>Try crawling a page that responds with 200 OK and has no `noindex` directive.</p>
                                     </div>
                                 </div>
                             </div>

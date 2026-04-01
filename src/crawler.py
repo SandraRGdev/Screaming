@@ -55,6 +55,7 @@ class WebCrawler:
 
         # Results storage
         self.crawl_results = []
+        self.sitemap_urls = []
         self.results_lock = threading.Lock()
 
         # State flags
@@ -297,6 +298,7 @@ class WebCrawler:
             self.issue_detector.reset()
 
         self.crawl_results.clear()
+        self.sitemap_urls = []
         self.stats = {
             'discovered': 0,
             'crawled': 0,
@@ -313,11 +315,12 @@ class WebCrawler:
     def _discover_and_add_sitemap_urls(self, base_url):
         """Discover sitemaps and add URLs to crawl queue"""
         sitemap_urls = self.sitemap_parser.discover_sitemaps(base_url)
+        self.sitemap_urls = list(dict.fromkeys(sitemap_urls))
 
         added_count = 0
         filtered_count = 0
 
-        for url in sitemap_urls:
+        for url in self.sitemap_urls:
             if self._should_crawl_url(url):
                 self.link_manager.add_url(url, 0)
                 added_count += 1
@@ -559,6 +562,7 @@ class WebCrawler:
             'urls': self.crawl_results.copy(),
             'links': self.link_manager.all_links.copy() if self.link_manager else [],
             'issues': self.issue_detector.get_issues() if self.issue_detector else [],
+            'sitemap_urls': self.sitemap_urls.copy(),
             'progress': min(100, (self.stats['crawled'] / max(link_stats['discovered'], 1)) * 100),
             'is_running_pagespeed': self.is_running_pagespeed,
             'memory': self.memory_monitor.get_stats(),

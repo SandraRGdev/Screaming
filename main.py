@@ -716,6 +716,10 @@ def crawl_status():
     # Get full status data
     status_data = crawler.get_status()
 
+    # Keep sitemap URLs available for the indexable tab
+    if 'sitemap_urls' not in status_data:
+        status_data['sitemap_urls'] = []
+
     # Ensure baseUrl is in stats (needed for UI to work correctly)
     if crawler.base_url and 'stats' in status_data:
         status_data['stats']['baseUrl'] = crawler.base_url
