@@ -35,8 +35,11 @@ parser.add_argument('--demo', '-dm', action='store_true',
                     help='Demo mode: 1.5GB memory limit per user, crawls auto-stop at limit')
 args = parser.parse_args()
 
-LOCAL_MODE = args.local
-DISABLE_REGISTER = args.disable_register
+def env_flag(name, default=False):
+    return os.getenv(name, str(default)).lower() in ('true', '1', 'yes', 'on')
+
+LOCAL_MODE = args.local or env_flag('LOCAL_MODE', True)
+DISABLE_REGISTER = args.disable_register or env_flag('DISABLE_REGISTER', True) or LOCAL_MODE
 DISABLE_GUEST = args.disable_guest or os.getenv('DISABLE_GUEST', '').lower() in ('true', '1', 'yes')
 DEMO_MODE = args.demo or os.getenv('DEMO_MODE', '').lower() in ('true', '1', 'yes')
 
@@ -443,8 +446,8 @@ def login_page():
 
 @app.route('/register')
 def register_page():
-    # Redirect to app if already logged in
-    if 'user_id' in session:
+    # Redirect to app if already logged in or registration is disabled
+    if LOCAL_MODE or DISABLE_REGISTER or 'user_id' in session:
         return redirect(url_for('index'))
     return render_template('register.html', registration_disabled=DISABLE_REGISTER)
 
@@ -659,7 +662,7 @@ def start_crawl():
         if crawls_from_ip >= 3:
             return jsonify({
                 'success': False,
-                'error': 'Guest limit reached: 3 crawls per 24 hours from your IP address. Please register for unlimited crawls.'
+                'error': 'Guest limit reached: 3 crawls per 24 hours from your IP address.'
             })
 
         # Log this guest crawl

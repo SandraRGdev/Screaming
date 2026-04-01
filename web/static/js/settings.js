@@ -324,7 +324,7 @@ async function openSettings() {
 
     // Block guests from accessing settings
     if (userTier === 'guest') {
-        alert('Settings are not available for guest users.\n\nPlease register for a free account to customize crawler settings, filters, and more.\n\nClick "Logout" and then "Register here" to create an account.');
+        alert('Settings are not available for guest users in this session.\n\nRefresh the page or sign in through the app entry point to continue.');
         return;
     }
 

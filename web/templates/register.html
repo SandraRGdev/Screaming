@@ -173,8 +173,8 @@
         <div id="alert" class="alert"></div>
 
         {% if registration_disabled %}
-        <div class="alert alert-error show">
-            Registrations are currently disabled. Please contact the administrator.
+        <div class="alert alert-info show">
+            This deployment uses open access. No registration is required.
         </div>
         {% endif %}
 
@@ -205,7 +205,7 @@
         </form>
 
         <div class="login-link">
-            Already have an account? <a href="/login">Login here</a>
+            <a href="/">Return to the app</a>
         </div>
     </div>
 
@@ -279,7 +279,7 @@
                     showAlert(data.message, 'success');
                     form.reset();
                     setTimeout(() => {
-                        window.location.href = '/login';
+                        window.location.href = '/';
                     }, 2000);
                 } else {
                     showAlert(data.message, 'error');

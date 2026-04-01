@@ -1474,17 +1474,17 @@ async function logout() {
         const data = await response.json();
 
         if (data.success) {
-            // Redirect to login page
-            window.location.href = '/login';
+            // Return to the app entry point
+            window.location.href = '/';
         } else {
             console.error('Logout failed:', data.message);
             // Still redirect even if logout fails
-            window.location.href = '/login';
+            window.location.href = '/';
         }
     } catch (error) {
         console.error('Logout error:', error);
         // Redirect anyway
-        window.location.href = '/login';
+        window.location.href = '/';
     }
 }
 

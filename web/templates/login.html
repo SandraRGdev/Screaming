@@ -189,11 +189,11 @@
         </form>
 
         {% if not guest_disabled %}
-        <button class="btn btn-guest" id="guestBtn">Continue as Guest (3 crawls/24h)</button>
+        <button class="btn btn-guest" id="guestBtn">Continue without an account</button>
         {% endif %}
 
         <div class="register-link">
-            Don't have an account? <a href="/register" id="registerLink">Register here</a>
+            <strong>Open access enabled.</strong> This deployment does not require registration.
         </div>
     </div>
 
@@ -274,12 +274,12 @@
                 } else {
                     showAlert(data.message || 'Failed to enter as guest', 'error');
                     guestBtn.disabled = false;
-                    guestBtn.textContent = 'Continue as Guest (3 crawls/24h)';
+                    guestBtn.textContent = 'Continue without an account';
                 }
             } catch (error) {
                 showAlert('An error occurred. Please try again.', 'error');
                 guestBtn.disabled = false;
-                guestBtn.textContent = 'Continue as Guest (3 crawls/24h)';
+                guestBtn.textContent = 'Continue without an account';
             }
         });
 
@@ -287,10 +287,10 @@
         const registrationDisabled = {{ 'true' if registration_disabled else 'false' }};
         const registerLink = document.getElementById('registerLink');
 
-        if (registrationDisabled) {
+        if (registrationDisabled && registerLink) {
             registerLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                window.alert('Registrations are disabled');
+                window.location.href = '/';
             });
         }
     </script>
