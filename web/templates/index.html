@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>LibreCrawl - Rastreador SEO</title>
+    <title>ScreamingWeb - Rastreador SEO</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
@@ -12,10 +12,9 @@
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <h1 class="app-title">LibreCrawl</h1>
+                <h1 class="app-title">ScreamingWeb</h1>
                 <div class="header-actions">
-                    <span id="userInfo" style="margin-right: 15px; color: #6b7280; font-size: 14px;"></span>
-                    <button class="btn btn-secondary" onclick="openDashboard()">Panel</button>
+                    <button class="btn btn-secondary" id="themeToggleBtn" onclick="toggleTheme()">Modo oscuro</button>
                     <button class="btn btn-secondary" onclick="openSettings()">Ajustes</button>
                     <button class="btn btn-secondary" onclick="exportData()">Exportar</button>
                     <button class="btn btn-success" id="saveCrawlBtn" onclick="saveCrawl()" disabled>Guardar rastreo</button>
@@ -142,9 +141,8 @@
                         <button class="tab-btn" onclick="switchTab('external')">Externas</button>
                         <button class="tab-btn" onclick="switchTab('status-codes')">Códigos</button>
                         <button class="tab-btn" onclick="switchTab('links')">Enlaces</button>
-                        <button class="tab-btn tab-btn-indexables" onclick="switchTab('indexables')">Indexables</button>
+                        <button class="tab-btn tab-btn-indexables" onclick="switchTab('indexables')">Indexadas</button>
                         <button id="issuesTabBtn" class="tab-btn" onclick="switchTab('issues')">Incidencias</button>
-                        <button class="tab-btn" onclick="switchTab('visualization')">Visualización</button>
                     </div>
 
                     <div class="tab-content">
@@ -153,6 +151,7 @@
                                 <table class="data-table" id="overviewTable">
                                     <thead>
                                         <tr>
+                                            <th>#</th>
                                             <th>URL</th>
                                             <th>Estado</th>
                                             <th>Título</th>
@@ -181,6 +180,7 @@
                                 <table class="data-table" id="internalTable">
                                     <thead>
                                         <tr>
+                                            <th>#</th>
                                             <th>URL</th>
                                             <th>Estado</th>
                                             <th>Tipo</th>
@@ -200,6 +200,7 @@
                                 <table class="data-table" id="externalTable">
                                     <thead>
                                         <tr>
+                                            <th>#</th>
                                             <th>URL</th>
                                             <th>Estado</th>
                                             <th>Tipo</th>
@@ -310,6 +311,7 @@
                                 <table class="data-table" id="indexablesTable">
                                     <thead>
                                         <tr>
+                                            <th>#</th>
                                             <th style="width: 42%;">URL</th>
                                             <th style="width: 10%;">Estado</th>
                                             <th style="width: 12%;">Origen</th>
@@ -379,71 +381,6 @@
                             </div>
                         </div>
 
-                        <div id="visualization-tab" class="tab-pane">
-                            <div class="visualization-container">
-                                <div class="visualization-header">
-                                    <h3>Visualización de la estructura del sitio</h3>
-                                    <div class="visualization-controls">
-                                        <select id="vizLayout" onchange="changeLayout(this.value)">
-                                            <option value="cose">Distribución por fuerza</option>
-                                            <option value="breadthfirst">Jerárquico</option>
-                                            <option value="circle">Círculo</option>
-                                            <option value="concentric">Concéntrico</option>
-                                            <option value="grid">Cuadrícula</option>
-                                        </select>
-                                        <select id="vizFilter" onchange="filterVisualization(this.value)">
-                                            <option value="all">Todas las páginas</option>
-                                            <option value="html">Solo HTML</option>
-                                            <option value="2xx">2xx Correcto</option>
-                                            <option value="3xx">3xx Redirecciones</option>
-                                            <option value="4xx">4xx Errores</option>
-                                            <option value="5xx">5xx Errores</option>
-                                        </select>
-                                        <button class="btn btn-secondary" onclick="resetVisualization()">Restablecer vista</button>
-                                        <button class="btn btn-secondary" onclick="exportVisualizationImage()">Exportar PNG</button>
-                                    </div>
-                                </div>
-                                <div id="cy" class="graph-container">
-                                    <div class="graph-placeholder">
-                                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <circle cx="12" cy="12" r="3"/>
-                                            <circle cx="6" cy="6" r="2"/>
-                                            <circle cx="18" cy="6" r="2"/>
-                                            <circle cx="6" cy="18" r="2"/>
-                                            <circle cx="18" cy="18" r="2"/>
-                                            <line x1="12" y1="12" x2="6" y2="6"/>
-                                            <line x1="12" y1="12" x2="18" y2="6"/>
-                                            <line x1="12" y1="12" x2="6" y2="18"/>
-                                            <line x1="12" y1="12" x2="18" y2="18"/>
-                                        </svg>
-                                        <h3>Aún no hay datos</h3>
-                                        <p>Empieza a rastrear para visualizar la estructura del sitio</p>
-                                    </div>
-                                </div>
-                                <div class="visualization-legend">
-                                    <div class="legend-item">
-                                        <span class="legend-color" style="background: #10b981;"></span>
-                                        <span>2xx Correcto</span>
-                                    </div>
-                                    <div class="legend-item">
-                                        <span class="legend-color" style="background: #3b82f6;"></span>
-                                        <span>3xx Redirección</span>
-                                    </div>
-                                    <div class="legend-item">
-                                        <span class="legend-color" style="background: #f59e0b;"></span>
-                                        <span>4xx Error</span>
-                                    </div>
-                                    <div class="legend-item">
-                                        <span class="legend-color" style="background: #ef4444;"></span>
-                                        <span>5xx Error</span>
-                                    </div>
-                                    <div class="legend-item">
-                                        <span class="legend-color" style="background: #6b7280;"></span>
-                                        <span>Otros</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -457,21 +394,6 @@
     </div>
 
     <!-- Settings Modal -->
-    <!-- Dashboard Modal -->
-    <div id="dashboardModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 1200px;">
-            <div class="modal-header">
-                <h2>Historial de rastreos</h2>
-                <button class="modal-close" onclick="closeDashboard()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="dashboardContent" style="padding: 20px;">
-                    <p style="text-align: center; color: #9ca3af;">Cargando rastreos...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="settingsModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -535,7 +457,7 @@
 
                     <div class="setting-group">
                         <label for="userAgent">User-Agent</label>
-                        <input type="text" id="userAgent" value="LibreCrawl/1.0 (Web Crawler)">
+                        <input type="text" id="userAgent" value="ScreamingWeb/1.0 (Web Crawler)">
                         <span class="setting-help">Cadena de agente que se envía con las peticiones</span>
                     </div>
 
@@ -787,7 +709,7 @@
 
                     <div class="setting-group" id="jsUserAgentGroup" style="display: none;">
                         <label for="jsUserAgent">User-Agent de JavaScript</label>
-                        <input type="text" id="jsUserAgent" value="LibreCrawl/1.0 (Web Crawler with JavaScript)">
+                        <input type="text" id="jsUserAgent" value="ScreamingWeb/1.0 (Web Crawler with JavaScript)">
                         <span class="setting-help">Cadena de User-Agent para páginas renderizadas con JavaScript</span>
                     </div>
 
@@ -850,7 +772,7 @@
                 <!-- Custom CSS Settings -->
                 <div id="customcss-settings" class="settings-tab-content">
                     <h3>Estilos CSS personalizados</h3>
-                    <p class="setting-help">Escribe CSS personalizado para adaptar el aspecto de LibreCrawl. Los cambios se aplican al guardar.</p>
+                    <p class="setting-help">Escribe CSS personalizado para adaptar el aspecto de ScreamingWeb. Los cambios se aplican al guardar.</p>
 
                     <div class="setting-group">
                         <label for="customCSS">Código CSS personalizado</label>
@@ -956,10 +878,8 @@
     <script src="/static/js/incremental_poller.js"></script>
     <script src="/static/js/virtual-scroller.js"></script>
     <script src="/static/js/column-resize.js"></script>
-    <script src="/static/js/visualization.js"></script>
     <script src="/static/js/plugin-loader.js"></script>
     <script src="/static/js/app.js"></script>
-    <script src="/static/js/dashboard.js"></script>
     <script src="/static/js/settings.js"></script>
 </body>
 </html>

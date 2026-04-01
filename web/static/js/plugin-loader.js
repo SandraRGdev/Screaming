@@ -1,5 +1,5 @@
 /**
- * LibreCrawl Plugin Loader
+ * ScreamingWeb Plugin Loader
  * Automatically discovers and loads plugins from /static/plugins/
  */
 
@@ -41,13 +41,7 @@ class PluginLoader {
      * - Use manifest file
      */
     async discoverPlugins() {
-        // For now, we'll manually list plugins here
-        // Users can add their plugin filenames to this array
-        const manualPlugins = [
-            // Add your plugin files here, e.g.:
-            'e-e-a-t.js',
-            // 'content-quality.js',
-        ];
+        const manualPlugins = [];
 
         // Filter out disabled plugins (starting with _)
         return manualPlugins.filter(file => !file.startsWith('_'));
@@ -77,7 +71,7 @@ class PluginLoader {
     }
 
     /**
-     * Register a plugin (called by plugin files via LibreCrawlPlugin.register())
+     * Register a plugin (called by plugin files via the global register hook)
      */
     registerPlugin(pluginConfig) {
         // Validate required fields
@@ -387,4 +381,4 @@ window.LibreCrawlPlugin = {
     }
 };
 
-console.log('🔌 LibreCrawl Plugin System loaded');
+console.log('🔌 ScreamingWeb Plugin System loaded');

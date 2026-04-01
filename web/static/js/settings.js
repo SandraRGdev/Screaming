@@ -9,7 +9,7 @@ let defaultSettings = {
     crawlExternalLinks: false,
 
     // Request settings
-    userAgent: 'LibreCrawl/1.0 (Web Crawler)',
+    userAgent: 'ScreamingWeb/1.0 (Web Crawler)',
     timeout: 10,
     retries: 3,
     acceptLanguage: 'en-US,en;q=0.9',
@@ -47,7 +47,7 @@ let defaultSettings = {
     jsTimeout: 30,
     jsBrowser: 'chromium',
     jsHeadless: true,
-    jsUserAgent: 'LibreCrawl/1.0 (Web Crawler with JavaScript)',
+    jsUserAgent: 'ScreamingWeb/1.0 (Web Crawler with JavaScript)',
     jsViewportWidth: 1920,
     jsViewportHeight: 1080,
     jsMaxConcurrentPages: 3,

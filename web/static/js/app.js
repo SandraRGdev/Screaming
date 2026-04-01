@@ -47,6 +47,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 async function initializeApp() {
+    initTheme();
+
     // Load plugins first (before tabs are initialized)
     if (window.LibreCrawlPlugin && window.LibreCrawlPlugin.loader) {
         await window.LibreCrawlPlugin.loader.loadAllPlugins();
@@ -176,7 +178,31 @@ async function initializeApp() {
     // Set initial focus
     document.getElementById('urlInput').focus();
 
-    console.log('LibreCrawl initialized');
+    console.log('ScreamingWeb inicializado');
+}
+
+function initTheme() {
+    const savedTheme = localStorage.getItem('screamingweb_theme') || 'dark';
+    applyTheme(savedTheme, false);
+}
+
+function applyTheme(theme, persist = true) {
+    const nextTheme = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', nextTheme);
+
+    if (persist) {
+        localStorage.setItem('screamingweb_theme', nextTheme);
+    }
+
+    const toggleBtn = document.getElementById('themeToggleBtn');
+    if (toggleBtn) {
+        toggleBtn.textContent = nextTheme === 'dark' ? 'Modo claro' : 'Modo oscuro';
+    }
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
 }
 
 function setupEventListeners() {
@@ -412,28 +438,15 @@ function pollCrawlProgress() {
                 updateStatus('Rastreo en curso...');
             }
 
-            // Update visualization if visualization tab is active
-            const vizTab = document.getElementById('visualization-tab');
-            if (vizTab && vizTab.classList.contains('active') && typeof loadVisualizationData === 'function') {
-                loadVisualizationData();
-            }
-
             if (data.status === 'demo_stopped' || data.demo_stopped) {
                 stopCrawl();
                 updateStatus('Límite de demo alcanzado - los datos del rastreo se han guardado');
                 showDemoLimitNotification();
-                if (typeof loadVisualizationData === 'function') {
-                    loadVisualizationData();
-                }
             } else if (crawlState.isRunning && data.status !== 'completed') {
                 setTimeout(pollCrawlProgress, 1000); // Poll every second
             } else if (data.status === 'completed') {
                 stopCrawl();
                 updateStatus('Rastreo completado');
-                // Update visualization one final time when crawl completes
-                if (typeof loadVisualizationData === 'function') {
-                    loadVisualizationData();
-                }
                 // Notify plugins that crawl is complete
                 if (window.LibreCrawlPlugin && window.LibreCrawlPlugin.loader) {
                     window.LibreCrawlPlugin.loader.notifyCrawlComplete({
@@ -1280,14 +1293,6 @@ function switchTab(tabName) {
         crawlState.pendingIssues = null; // Clear pending data
     }
 
-    // Initialize visualization if switching to Visualization tab
-    if (tabName === 'visualization' && typeof initVisualization === 'function') {
-        // Small delay to ensure the tab is visible before initializing
-        setTimeout(() => {
-            initVisualization();
-        }, 100);
-    }
-
     // Handle plugin tabs
     const pluginTab = document.getElementById(`${tabName}-tab`);
     if (pluginTab && pluginTab.classList.contains('plugin-tab')) {
@@ -1710,20 +1715,21 @@ async function logout() {
 
 async function loadUserInfo() {
     try {
+        const userInfoElement = document.getElementById('userInfo');
+        if (!userInfoElement) {
+            return;
+        }
+
         const response = await fetch('/api/user/info');
         const data = await response.json();
 
         if (data.success && data.user) {
             const user = data.user;
-            const userInfoElement = document.getElementById('userInfo');
-
             if (user.tier === 'guest') {
-                // Show crawls remaining for guests
                 const remaining = user.crawls_remaining;
                 userInfoElement.textContent = `Invitado (${remaining}/3 rastreos restantes)`;
                 userInfoElement.style.color = remaining === 0 ? '#dc2626' : '#6b7280';
             } else {
-                // Show username and tier for registered users
                 userInfoElement.textContent = `${user.username} (${user.tier})`;
                 userInfoElement.style.color = '#6b7280';
             }
@@ -2324,11 +2330,6 @@ function loadCrawl() {
                 console.log(`Table counts - Overview: ${overviewCount}, Internal: ${internalCount}, External: ${externalCount}`);
             }, 100);
 
-            // Update visualization if it exists and has been initialized
-            if (typeof window.updateVisualizationFromLoadedData === 'function') {
-                window.updateVisualizationFromLoadedData(saveData.urls, saveData.links);
-            }
-
             // Notify plugins of loaded data
             if (window.LibreCrawlPlugin && window.LibreCrawlPlugin.loader) {
                 window.LibreCrawlPlugin.loader.notifyDataUpdate({
@@ -2367,6 +2368,7 @@ function renderOverviewRow(row, urlData, index) {
     const jsRendered = urlData.javascript_rendered ? '✅ JS' : '';
 
     const cells = [
+        index + 1,
         urlData.url,
         urlData.status_code,
         urlData.title || '',
@@ -2390,12 +2392,17 @@ function renderOverviewRow(row, urlData, index) {
         } else {
             cell.textContent = cellData;
         }
+        if (cellData === urlData.url) {
+            cell.classList.add('url-cell');
+            cell.title = urlData.url;
+        }
         row.appendChild(cell);
     });
 }
 
 function renderInternalRow(row, urlData, index) {
     const cells = [
+        index + 1,
         urlData.url,
         urlData.status_code,
         urlData.content_type || '',
@@ -2406,12 +2413,17 @@ function renderInternalRow(row, urlData, index) {
     cells.forEach(cellData => {
         const cell = document.createElement('td');
         cell.textContent = cellData;
+        if (cellData === urlData.url) {
+            cell.classList.add('url-cell');
+            cell.title = urlData.url;
+        }
         row.appendChild(cell);
     });
 }
 
 function renderExternalRow(row, urlData, index) {
     const cells = [
+        index + 1,
         urlData.url,
         urlData.status_code,
         urlData.content_type || '',
@@ -2422,6 +2434,10 @@ function renderExternalRow(row, urlData, index) {
     cells.forEach(cellData => {
         const cell = document.createElement('td');
         cell.textContent = cellData;
+        if (cellData === urlData.url) {
+            cell.classList.add('url-cell');
+            cell.title = urlData.url;
+        }
         row.appendChild(cell);
     });
 }
@@ -2458,6 +2474,7 @@ function renderIndexableRow(row, urlData, index) {
     const statusValue = urlData.discovered_only ? 'sitemap' : (urlData.status_code || 0);
 
     row.innerHTML = `
+        <td>${index + 1}</td>
         <td style="word-break: break-all;" title="${urlData.url}">${urlData.url}</td>
         <td>${statusValue}</td>
         <td>${source}</td>
