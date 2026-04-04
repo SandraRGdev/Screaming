@@ -49,24 +49,24 @@ class IssueDetector:
                 'url': url,
                 'type': 'error',
                 'category': 'SEO',
-                'issue': 'Missing Title Tag',
-                'details': 'Page has no title tag'
+                'issue': 'Falta etiqueta Title',
+                'details': 'La página no tiene etiqueta title'
             })
         elif len(title) > 60:
             issues.append({
                 'url': url,
                 'type': 'warning',
                 'category': 'SEO',
-                'issue': 'Title Too Long',
-                'details': f"Title is {len(title)} characters (recommended: ≤60)"
+                'issue': 'Título demasiado largo',
+                'details': f"El título tiene {len(title)} caracteres (recomendado: ≤60)"
             })
         elif len(title) < 30:
             issues.append({
                 'url': url,
                 'type': 'warning',
                 'category': 'SEO',
-                'issue': 'Title Too Short',
-                'details': f"Title is {len(title)} characters (recommended: 30-60)"
+                'issue': 'Título demasiado corto',
+                'details': f"El título tiene {len(title)} caracteres (recomendado: 30-60)"
             })
 
     def _check_meta_description_issues(self, result, issues):
@@ -79,24 +79,24 @@ class IssueDetector:
                 'url': url,
                 'type': 'error',
                 'category': 'SEO',
-                'issue': 'Missing Meta Description',
-                'details': 'Page has no meta description'
+                'issue': 'Falta meta descripción',
+                'details': 'La página no tiene meta descripción'
             })
         elif len(meta_desc) > 160:
             issues.append({
                 'url': url,
                 'type': 'warning',
                 'category': 'SEO',
-                'issue': 'Meta Description Too Long',
-                'details': f"Description is {len(meta_desc)} characters (recommended: ≤160)"
+                'issue': 'Meta descripción demasiado larga',
+                'details': f"La descripción tiene {len(meta_desc)} caracteres (recomendado: ≤160)"
             })
         elif len(meta_desc) < 120:
             issues.append({
                 'url': url,
                 'type': 'warning',
                 'category': 'SEO',
-                'issue': 'Meta Description Too Short',
-                'details': f"Description is {len(meta_desc)} characters (recommended: 120-160)"
+                'issue': 'Meta descripción demasiado corta',
+                'details': f"La descripción tiene {len(meta_desc)} caracteres (recomendado: 120-160)"
             })
 
     def _check_heading_issues(self, result, issues):
@@ -108,8 +108,8 @@ class IssueDetector:
                 'url': url,
                 'type': 'error',
                 'category': 'SEO',
-                'issue': 'Missing H1 Tag',
-                'details': 'Page has no H1 heading'
+                'issue': 'Falta etiqueta H1',
+                'details': 'La página no tiene encabezado H1'
             })
 
     def _check_content_issues(self, result, issues):
@@ -121,9 +121,9 @@ class IssueDetector:
             issues.append({
                 'url': url,
                 'type': 'warning',
-                'category': 'Content',
-                'issue': 'Thin Content',
-                'details': f'Page has only {word_count} words (recommended: ≥300)'
+                'category': 'Contenido',
+                'issue': 'Contenido escaso',
+                'details': f'La página tiene solo {word_count} palabras (recomendado: ≥300)'
             })
 
     def _check_technical_issues(self, result, issues):
@@ -135,25 +135,25 @@ class IssueDetector:
             issues.append({
                 'url': url,
                 'type': 'error',
-                'category': 'Technical',
-                'issue': f'{status_code} Client Error',
+                'category': 'Técnico',
+                'issue': f'{status_code} Error de cliente',
                 'details': self._get_status_code_message(status_code)
             })
         elif status_code >= 500:
             issues.append({
                 'url': url,
                 'type': 'error',
-                'category': 'Technical',
-                'issue': f'{status_code} Server Error',
+                'category': 'Técnico',
+                'issue': f'{status_code} Error de servidor',
                 'details': self._get_status_code_message(status_code)
             })
         elif status_code >= 300 and status_code < 400:
             issues.append({
                 'url': url,
                 'type': 'info',
-                'category': 'Technical',
-                'issue': f'{status_code} Redirect',
-                'details': 'URL redirects to another location'
+                'category': 'Técnico',
+                'issue': f'{status_code} Redirección',
+                'details': 'La URL redirige a otra ubicación'
             })
 
         # Canonical URL checks
@@ -162,17 +162,17 @@ class IssueDetector:
             issues.append({
                 'url': url,
                 'type': 'warning',
-                'category': 'Technical',
-                'issue': 'Missing Canonical URL',
-                'details': 'Page has no canonical URL specified'
+                'category': 'Técnico',
+                'issue': 'Falta URL canónica',
+                'details': 'La página no tiene URL canónica especificada'
             })
         elif canonical_url != url:
             issues.append({
                 'url': url,
                 'type': 'warning',
-                'category': 'Technical',
-                'issue': 'Canonical URL Different',
-                'details': f"Canonical points to: {canonical_url}"
+                'category': 'Técnico',
+                'issue': 'URL canónica diferente',
+                'details': f"La URL canónica apunta a: {canonical_url}"
             })
 
     def _check_mobile_issues(self, result, issues):
@@ -183,9 +183,9 @@ class IssueDetector:
             issues.append({
                 'url': url,
                 'type': 'error',
-                'category': 'Mobile',
-                'issue': 'Missing Viewport Meta Tag',
-                'details': 'Page is not mobile-optimized'
+                'category': 'Móvil',
+                'issue': 'Falta etiqueta viewport',
+                'details': 'La página no está optimizada para móviles'
             })
 
     def _check_accessibility_issues(self, result, issues):
@@ -196,9 +196,9 @@ class IssueDetector:
             issues.append({
                 'url': url,
                 'type': 'warning',
-                'category': 'Accessibility',
-                'issue': 'Missing Language Attribute',
-                'details': 'HTML tag has no lang attribute'
+                'category': 'Accesibilidad',
+                'issue': 'Falta atributo de idioma',
+                'details': 'La etiqueta HTML no tiene atributo lang'
             })
 
         # Image alt text
@@ -208,9 +208,9 @@ class IssueDetector:
             issues.append({
                 'url': url,
                 'type': 'warning',
-                'category': 'Accessibility',
-                'issue': 'Images Without Alt Text',
-                'details': f'{len(images_without_alt)} of {len(images)} images lack alt text'
+                'category': 'Accesibilidad',
+                'issue': 'Imágenes sin texto alt',
+                'details': f'{len(images_without_alt)} de {len(images)} imágenes carecen de texto alternativo'
             })
 
     def _check_social_media_issues(self, result, issues):
@@ -222,8 +222,8 @@ class IssueDetector:
                 'url': url,
                 'type': 'warning',
                 'category': 'Social',
-                'issue': 'Missing OpenGraph Tags',
-                'details': 'Page has no OpenGraph tags for social sharing'
+                'issue': 'Faltan etiquetas OpenGraph',
+                'details': 'La página no tiene etiquetas OpenGraph para compartir en redes'
             })
 
         if not result.get('twitter_tags'):
@@ -231,8 +231,8 @@ class IssueDetector:
                 'url': url,
                 'type': 'warning',
                 'category': 'Social',
-                'issue': 'Missing Twitter Card Tags',
-                'details': 'Page has no Twitter Card tags'
+                'issue': 'Faltan etiquetas Twitter Card',
+                'details': 'La página no tiene etiquetas Twitter Card'
             })
 
     def _check_structured_data_issues(self, result, issues):
@@ -243,9 +243,9 @@ class IssueDetector:
             issues.append({
                 'url': url,
                 'type': 'error',
-                'category': 'Structured Data',
-                'issue': 'No Structured Data',
-                'details': 'Page has no JSON-LD or Schema.org markup'
+                'category': 'Datos estructurados',
+                'issue': 'Sin datos estructurados',
+                'details': 'La página no tiene marcado JSON-LD ni Schema.org'
             })
 
     def _check_performance_issues(self, result, issues):
@@ -258,34 +258,34 @@ class IssueDetector:
             issues.append({
                 'url': url,
                 'type': 'error',
-                'category': 'Performance',
-                'issue': 'Slow Response Time',
-                'details': f'Page took {response_time}ms to respond (recommended: <3000ms)'
+                'category': 'Rendimiento',
+                'issue': 'Tiempo de respuesta lento',
+                'details': f'La página tardó {response_time}ms en responder (recomendado: <3000ms)'
             })
         elif response_time > 1000:
             issues.append({
                 'url': url,
                 'type': 'warning',
-                'category': 'Performance',
-                'issue': 'Moderate Response Time',
-                'details': f'Page took {response_time}ms to respond (recommended: <1000ms)'
+                'category': 'Rendimiento',
+                'issue': 'Tiempo de respuesta moderado',
+                'details': f'La página tardó {response_time}ms en responder (recomendado: <1000ms)'
             })
 
         if page_size > 3 * 1024 * 1024:
             issues.append({
                 'url': url,
                 'type': 'error',
-                'category': 'Performance',
-                'issue': 'Large Page Size',
-                'details': f'Page size is {page_size / 1024 / 1024:.1f}MB (recommended: <3MB)'
+                'category': 'Rendimiento',
+                'issue': 'Tamaño de página grande',
+                'details': f'El tamaño de página es {page_size / 1024 / 1024:.1f}MB (recomendado: <3MB)'
             })
         elif page_size > 1 * 1024 * 1024:
             issues.append({
                 'url': url,
                 'type': 'warning',
-                'category': 'Performance',
-                'issue': 'Moderate Page Size',
-                'details': f'Page size is {page_size / 1024 / 1024:.1f}MB (recommended: <1MB)'
+                'category': 'Rendimiento',
+                'issue': 'Tamaño de página moderado',
+                'details': f'El tamaño de página es {page_size / 1024 / 1024:.1f}MB (recomendado: <1MB)'
             })
 
     def _check_indexability_issues(self, result, issues):
@@ -297,18 +297,18 @@ class IssueDetector:
             issues.append({
                 'url': url,
                 'type': 'error',
-                'category': 'Indexability',
-                'issue': 'Noindex Tag Present',
-                'details': 'Page is BLOCKED from search engines - has noindex directive'
+                'category': 'Indexabilidad',
+                'issue': 'Etiqueta noindex presente',
+                'details': 'La página está BLOQUEADA de los motores de búsqueda - tiene directiva noindex'
             })
 
         if 'nofollow' in robots:
             issues.append({
                 'url': url,
                 'type': 'error',
-                'category': 'Indexability',
-                'issue': 'Nofollow Tag Present',
-                'details': 'Links on this page are NOT followed by search engines - has nofollow directive'
+                'category': 'Indexabilidad',
+                'issue': 'Etiqueta nofollow presente',
+                'details': 'Los enlaces de esta página NO son seguidos por los motores de búsqueda - tiene directiva nofollow'
             })
 
     def detect_duplication_issues(self, all_results, similarity_threshold=0.85):
@@ -357,16 +357,16 @@ class IssueDetector:
                     issues.append({
                         'url': url1,
                         'type': 'warning',
-                        'category': 'Duplication',
-                        'issue': 'Duplicate Content Detected',
-                        'details': f'Content is {similarity*100:.1f}% similar to {url2}'
+                        'category': 'Duplicación',
+                        'issue': 'Contenido duplicado detectado',
+                        'details': f'El contenido es {similarity*100:.1f}% similar a {url2}'
                     })
                     issues.append({
                         'url': url2,
                         'type': 'warning',
-                        'category': 'Duplication',
-                        'issue': 'Duplicate Content Detected',
-                        'details': f'Content is {similarity*100:.1f}% similar to {url1}'
+                        'category': 'Duplicación',
+                        'issue': 'Contenido duplicado detectado',
+                        'details': f'El contenido es {similarity*100:.1f}% similar a {url1}'
                     })
 
         # Add all detected duplication issues
@@ -446,23 +446,23 @@ class IssueDetector:
     def _get_status_code_message(self, status_code):
         """Get descriptive message for HTTP status codes"""
         messages = {
-            400: 'Bad Request',
-            401: 'Unauthorized',
-            403: 'Forbidden',
-            404: 'Not Found',
-            405: 'Method Not Allowed',
-            406: 'Not Acceptable',
-            408: 'Request Timeout',
-            410: 'Gone',
-            429: 'Too Many Requests',
-            500: 'Internal Server Error',
-            501: 'Not Implemented',
-            502: 'Bad Gateway',
-            503: 'Service Unavailable',
-            504: 'Gateway Timeout',
-            505: 'HTTP Version Not Supported'
+            400: 'Solicitud incorrecta',
+            401: 'No autorizado',
+            403: 'Prohibido',
+            404: 'No encontrado',
+            405: 'Método no permitido',
+            406: 'No aceptable',
+            408: 'Tiempo de espera agotado',
+            410: 'Recurso eliminado',
+            429: 'Demasiadas solicitudes',
+            500: 'Error interno del servidor',
+            501: 'No implementado',
+            502: 'Puerta de enlace incorrecta',
+            503: 'Servicio no disponible',
+            504: 'Tiempo de espera de puerta de enlace',
+            505: 'Versión HTTP no soportada'
         }
-        return messages.get(status_code, f'HTTP {status_code} Error')
+        return messages.get(status_code, f'Error HTTP {status_code}')
 
     def get_issues(self):
         """Get all detected issues"""

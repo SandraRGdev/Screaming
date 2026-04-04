@@ -1,17 +1,17 @@
 /**
- * E-E-A-T Analyzer Plugin for LibreCrawl
+ * E-E-A-T Analyzer Plugin for ScreamingWeb
  * Analyzes Experience, Expertise, Authoritativeness, Trust signals on crawled pages
  *
- * @author LibreCrawl Community
+ * @author ScreamingWeb Community
  * @version 1.0.0
  */
 
-LibreCrawlPlugin.register({
+ScreamingWebPlugin.register({
     // Plugin metadata
     id: 'e-e-a-t',
     name: 'E-E-A-T Analyzer',
     version: '1.0.0',
-    author: 'LibreCrawl Community',
+    author: 'ScreamingWeb Community',
     description: 'Analyzes Experience, Expertise, Authoritativeness, Trust (E-E-A-T) signals on your website',
 
     // Tab configuration

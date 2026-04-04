@@ -1,89 +1,88 @@
-# LibreCrawl Plugins
+# Plugins de ScreamingWeb
 
-Drop your custom plugin files here! Each `.js` file will automatically create a new tab in LibreCrawl.
+Coloca tus archivos de plugin personalizados aquí. Cada archivo `.js` creará automáticamente una nueva pestaña en ScreamingWeb.
 
-## 🔌 Quick Start
+## Quick Start
 
-1. Create a new `.js` file in this folder (e.g., `my-plugin.js`)
-2. Register your plugin using the LibreCrawl Plugin API
-3. Refresh the app - your new tab appears automatically!
+1. Crea un nuevo archivo `.js` en esta carpeta (ej: `mi-plugin.js`)
+2. Registra tu plugin usando la API de Plugins de ScreamingWeb
+3. Refresca la app - tu nueva pestaña aparecerá automáticamente!
 
-## 📝 Example Plugin Structure
+## Estructura de ejemplo
 
 ```javascript
-LibreCrawlPlugin.register({
-  // Required: Unique ID (used for tab identification)
-  id: 'my-plugin',
+ScreamingWebPlugin.register({
+  // Requerido: ID único
+  id: 'mi-plugin',
 
-  // Required: Display name
-  name: 'My Plugin',
+  // Requerido: Nombre para mostrar
+  name: 'Mi Plugin',
 
-  // Required: Tab configuration
+  // Requerido: Configuración de pestaña
   tab: {
-    label: 'My Tab',
-    icon: '🔥', // Optional emoji
+    label: 'Mi Pestaña',
+    icon: '🔥',
   },
 
-  // Called when your tab is activated
+  // Se ejecuta al activar la pestaña
   onTabActivate(container, data) {
-    // data contains: { urls, links, issues, stats }
     container.innerHTML = `
       <div class="plugin-content" style="padding: 20px; overflow-y: auto; max-height: calc(100vh - 280px);">
-        <h2>My Custom Analysis</h2>
-        <p>Found ${data.urls.length} URLs!</p>
+        <h2>Mi análisis personalizado</h2>
+        <p>Se encontraron ${data.urls.length} URLs!</p>
       </div>
     `;
   },
 
-  // Optional: Called during live crawls when data updates
+  // Opcional: Se ejecuta durante rastreos en vivo
   onDataUpdate(data) {
     if (this.isActive) {
-      // Update your UI
+      // Actualizar la interfaz
     }
   }
 });
 ```
 
-## 🎯 Available Data
+## Datos disponibles
 
-Your plugin receives the same data as built-in tabs:
+Tu plugin recibe los mismos datos que las pestañas integradas:
 
-- **`urls`** - Array of all crawled URLs with full metadata
-- **`links`** - All discovered links (internal/external)
-- **`issues`** - Detected SEO issues
-- **`stats`** - Crawl statistics (discovered, crawled, depth, speed)
+- **`urls`** - Array de todas las URLs rastreadas con metadatos completos
+- **`links`** - Todos los enlaces descubiertos (internos/externos)
+- **`issues`** - Incidencias SEO detectadas
+- **`stats`** - Estadísticas del rastreo (descubiertas, rastreadas, profundidad, velocidad)
 
-## 📚 Full API Reference
+## API Reference
 
-### Plugin Configuration
+### Configuración del Plugin
 
 ```javascript
 {
-  id: string,              // Unique identifier
-  name: string,            // Display name
-  version: string,         // Optional version
-  author: string,          // Optional author
-  description: string,     // Optional description
+  id: string,
+  name: string,
+  version: string,
+  author: string,
+  description: string,
 
   tab: {
-    label: string,         // Tab button text
-    icon: string,          // Optional emoji/icon
-    position: number       // Optional position (default: append to end)
+    label: string,
+    icon: string,
+    position: number
   }
 }
 ```
 
 ### Lifecycle Hooks
 
-- `onLoad()` - Called when plugin loads
-- `onTabActivate(container, data)` - Called when tab becomes active
-- `onTabDeactivate()` - Called when user switches away
-- `onDataUpdate(data)` - Called during live crawls
-- `onCrawlComplete(data)` - Called when crawl finishes
+- `onLoad()` - Se ejecuta al cargar el plugin
+- `onTabActivate(container, data)` - Se ejecuta al activar la pestaña
+- `onTabDeactivate()` - Se ejecuta al cambiar de pestaña
+- `onDataUpdate(data)` - Se ejecuta durante rastreos en vivo
+- `onCrawlComplete(data)` - Se ejecuta al completar el rastreo
 
-### Utilities
+### Utilidades
 
-Access built-in utilities via `this.utils`:
+Accede a las utilidades integradas vía `this.utils`:
 
 ```javascript
 this.utils.showNotification(message, type) // 'success', 'error', 'info'
@@ -91,34 +90,27 @@ this.utils.formatUrl(url)
 this.utils.escapeHtml(text)
 ```
 
-## 🎨 Styling
+## Estilos
 
-Use these CSS classes to match LibreCrawl's design:
+Usa estas clases CSS para coincidir con el diseño de ScreamingWeb:
 
-- `.plugin-content` - Main container
-- `.plugin-header` - Header section
-- `.data-table` - Tables (auto-styled)
-- `.stat-card` - Statistic cards
-- `.score-good` / `.score-needs-improvement` / `.score-poor` - Score indicators
+- `.plugin-content` - Contenedor principal
+- `.plugin-header` - Sección de encabezado
+- `.data-table` - Tablas (estilo automático)
+- `.stat-card` - Tarjetas de estadísticas
+- `.score-good` / `.score-needs-improvement` / `.score-poor` - Indicadores de puntuación
 
-**Important:** Always add these styles to your main plugin container for proper scrolling:
+**Importante:** Siempre añade estos estilos al contenedor principal del plugin para el desplazamiento correcto:
 
 ```javascript
 container.innerHTML = `
   <div class="plugin-content" style="padding: 20px; overflow-y: auto; max-height: calc(100vh - 280px);">
-    <!-- Your content here -->
+    <!-- Tu contenido aquí -->
   </div>
 `;
 ```
 
-The `max-height: calc(100vh - 280px)` ensures your content scrolls properly within the tab pane.
+## Plugins de ejemplo
 
-## 🔥 Example Plugins
-
-Check out these example plugins to get started:
-
-- `_example-plugin.js` - Basic template (ignored by loader)
-- `e-e-a-t.js` - E-E-A-T analyzer example
-- `content-quality.js` - Content quality scorer example
-
-Happy plugin development! 🚀
+- `_example-plugin.js` - Plantilla básica (ignorado por el cargador)
+- `e-e-a-t.js` - Analizador E-E-A-T

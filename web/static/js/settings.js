@@ -498,7 +498,7 @@ function saveSettings() {
 
     // Save to localStorage first (primary storage for persistence)
     try {
-        localStorage.setItem('librecrawl_settings', JSON.stringify(newSettings));
+        localStorage.setItem('screamingweb_settings', JSON.stringify(newSettings));
         console.log('Settings saved to localStorage');
     } catch (error) {
         console.error('Failed to save to localStorage:', error);
@@ -545,7 +545,7 @@ function resetSettings() {
 
         // Clear localStorage
         try {
-            localStorage.removeItem('librecrawl_settings');
+            localStorage.removeItem('screamingweb_settings');
             console.log('Settings cleared from localStorage');
         } catch (error) {
             console.error('Failed to clear localStorage:', error);
@@ -656,7 +656,7 @@ function validateSettings(settings) {
 function loadSettings() {
     // Try to load from localStorage first (browser-specific persistence)
     try {
-        const savedSettings = localStorage.getItem('librecrawl_settings');
+        const savedSettings = localStorage.getItem('screamingweb_settings');
         if (savedSettings) {
             const parsed = JSON.parse(savedSettings);
             currentSettings = { ...defaultSettings, ...parsed };
@@ -680,7 +680,7 @@ function loadSettings() {
             if (data.success) {
                 currentSettings = { ...defaultSettings, ...data.settings };
                 // Save to localStorage for future loads
-                localStorage.setItem('librecrawl_settings', JSON.stringify(currentSettings));
+                localStorage.setItem('screamingweb_settings', JSON.stringify(currentSettings));
                 // Apply custom CSS after loading settings
                 applyCustomCSS();
             } else {
@@ -739,7 +739,7 @@ function exportSettings() {
     const url = URL.createObjectURL(settingsBlob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'librecrawl-settings.json';
+    a.download = 'screamingweb-settings.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

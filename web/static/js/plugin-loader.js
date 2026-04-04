@@ -362,7 +362,7 @@ class PluginLoader {
 }
 
 // Global plugin API
-window.LibreCrawlPlugin = {
+window.ScreamingWebPlugin = {
     loader: new PluginLoader(),
 
     /**

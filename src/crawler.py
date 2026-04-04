@@ -33,7 +33,7 @@ class WebCrawler:
         # HTTP session
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'LibreCrawl/1.0 (Web Crawler)'
+            'User-Agent': 'ScreamingWeb/1.0 (Web Crawler)'
         })
 
         # Base URL tracking

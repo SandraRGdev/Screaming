@@ -50,9 +50,9 @@ async function initializeApp() {
     initTheme();
 
     // Load plugins first (before tabs are initialized)
-    if (window.LibreCrawlPlugin && window.LibreCrawlPlugin.loader) {
-        await window.LibreCrawlPlugin.loader.loadAllPlugins();
-        window.LibreCrawlPlugin.loader.initializePlugins();
+    if (window.ScreamingWebPlugin && window.ScreamingWebPlugin.loader) {
+        await window.ScreamingWebPlugin.loader.loadAllPlugins();
+        window.ScreamingWebPlugin.loader.initializePlugins();
     }
 
     // Setup event listeners
@@ -350,8 +350,8 @@ function clearCrawlData() {
     }
 
     // Notify plugins of data clear (send empty data)
-    if (window.LibreCrawlPlugin && window.LibreCrawlPlugin.loader) {
-        window.LibreCrawlPlugin.loader.notifyDataUpdate({
+    if (window.ScreamingWebPlugin && window.ScreamingWebPlugin.loader) {
+        window.ScreamingWebPlugin.loader.notifyDataUpdate({
             urls: [],
             links: [],
             issues: [],
@@ -448,8 +448,8 @@ function pollCrawlProgress() {
                 stopCrawl();
                 updateStatus('Rastreo completado');
                 // Notify plugins that crawl is complete
-                if (window.LibreCrawlPlugin && window.LibreCrawlPlugin.loader) {
-                    window.LibreCrawlPlugin.loader.notifyCrawlComplete({
+                if (window.ScreamingWebPlugin && window.ScreamingWebPlugin.loader) {
+                    window.ScreamingWebPlugin.loader.notifyCrawlComplete({
                         urls: crawlState.urls,
                         links: crawlState.links,
                         issues: crawlState.issues,
@@ -533,8 +533,8 @@ function updateCrawlData(data) {
     }
 
     // Notify plugins of data update
-    if (window.LibreCrawlPlugin && window.LibreCrawlPlugin.loader) {
-        window.LibreCrawlPlugin.loader.notifyDataUpdate({
+    if (window.ScreamingWebPlugin && window.ScreamingWebPlugin.loader) {
+        window.ScreamingWebPlugin.loader.notifyDataUpdate({
             urls: crawlState.urls,
             links: crawlState.links,
             issues: crawlState.issues,
@@ -1302,11 +1302,11 @@ function switchTab(tabName) {
 
 // Handle plugin tab activation
 function handlePluginTabSwitch(tabName) {
-    if (!window.LibreCrawlPlugin || !window.LibreCrawlPlugin.loader) {
+    if (!window.ScreamingWebPlugin || !window.ScreamingWebPlugin.loader) {
         return;
     }
 
-    const loader = window.LibreCrawlPlugin.loader;
+    const loader = window.ScreamingWebPlugin.loader;
 
     // Deactivate previously active plugin
     if (loader.activePluginId && loader.activePluginId !== tabName) {
@@ -2171,7 +2171,7 @@ async function saveCrawl() {
         // Generate filename with domain and timestamp
         const domain = crawlState.baseUrl ? new URL(crawlState.baseUrl).hostname : 'crawl';
         const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-        a.download = `librecrawl_${domain}_${timestamp}.json`;
+        a.download = `screamingweb_${domain}_${timestamp}.json`;
 
         document.body.appendChild(a);
         a.click();
@@ -2331,8 +2331,8 @@ function loadCrawl() {
             }, 100);
 
             // Notify plugins of loaded data
-            if (window.LibreCrawlPlugin && window.LibreCrawlPlugin.loader) {
-                window.LibreCrawlPlugin.loader.notifyDataUpdate({
+            if (window.ScreamingWebPlugin && window.ScreamingWebPlugin.loader) {
+                window.ScreamingWebPlugin.loader.notifyDataUpdate({
                     urls: crawlState.urls,
                     links: crawlState.links,
                     issues: crawlState.issues,
@@ -2509,9 +2509,11 @@ function renderIssueRow(row, issue, index) {
         typeColor = '#3b82f6';
     }
 
+    const typeLabels = { 'error': 'Error', 'warning': 'Advertencia', 'info': 'Info' };
+
     row.innerHTML = `
         <td style="word-break: break-all;" title="${issue.url}">${issue.url}</td>
-        <td><span style="color: ${typeColor};">${typeIcon}</span> ${issue.type}</td>
+        <td><span style="color: ${typeColor};">${typeIcon}</span> ${typeLabels[issue.type] || issue.type}</td>
         <td>${issue.category}</td>
         <td>${issue.issue}</td>
         <td style="word-break: break-word;" title="${issue.details}">${issue.details}</td>

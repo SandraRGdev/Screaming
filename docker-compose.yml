@@ -1,7 +1,7 @@
 services:
-  librecrawl:
+  screamingweb:
     build: .
-    container_name: librecrawl
+    container_name: screamingweb
     ports:
       # In local mode: only localhost (127.0.0.1:5000)
       # In production mode: all interfaces (0.0.0.0:5000) for LAN/WAN access
@@ -44,4 +44,3 @@ services:
 
     # Increase shared memory size for Chrome to prevent crashes
     shm_size: '2gb'
-
